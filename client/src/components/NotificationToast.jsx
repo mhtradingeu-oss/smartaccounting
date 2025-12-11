@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -20,6 +20,14 @@ const NotificationToast = ({
   const [isVisible, setIsVisible] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      onClose?.();
+    }, 300);
+  }, [onClose]);
+
   useEffect(() => {
     if (!persistent && duration > 0) {
       const timer = setTimeout(() => {
@@ -28,15 +36,7 @@ const NotificationToast = ({
 
       return () => clearTimeout(timer);
     }
-  }, [duration, persistent]);
-
-  const handleClose = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      onClose?.();
-    }, 300);
-  };
+  }, [duration, persistent, handleClose]);
 
   const getIcon = () => {
     switch (type) {
@@ -66,7 +66,7 @@ const NotificationToast = ({
     }
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {return null;}
 
   return (
     <div

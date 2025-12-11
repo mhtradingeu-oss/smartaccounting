@@ -16,7 +16,7 @@ const MetricCard = ({
   className = '',
 }) => {
   const formatValue = (val) => {
-    if (loading) return '---';
+    if (loading) {return '---';}
     if (typeof val === 'number') {
       return val.toLocaleString();
     }

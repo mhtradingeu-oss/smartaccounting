@@ -34,7 +34,7 @@ const CheckoutForm = ({ planId, onSuccess, onCancel }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) {return;}
 
     setLoading(true);
     setError(null);
@@ -47,7 +47,7 @@ const CheckoutForm = ({ planId, onSuccess, onCancel }) => {
         const result = await stripe.confirmCardPayment(data.clientSecret, {
           payment_method: {
             card: elements.getElement(CardElement),
-          }
+          },
         });
 
         if (result.error) {
@@ -169,13 +169,14 @@ const Pricing = () => {
     try {
       const [plansResponse, statusResponse] = await Promise.all([
         api.get('/stripe/plans'),
-        api.get('/stripe/subscription-status')
+        api.get('/stripe/subscription-status'),
       ]);
 
       setPlans(plansResponse.data);
       setSubscriptionStatus(statusResponse.data);
     } catch (error) {
-      } finally {
+      logger.error('Failed to load pricing data', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -185,7 +186,7 @@ const Pricing = () => {
     setShowCheckout(true);
   };
 
-  const handleSubscriptionSuccess = (subscriptionId) => {
+  const handleSubscriptionSuccess = (_subscriptionId) => {
     setShowCheckout(false);
     setSelectedPlan(null);
     fetchData(); 

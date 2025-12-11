@@ -16,7 +16,8 @@ const PlanBadge = () => {
       const response = await api.get('/stripe/subscription-status');
       setSubscriptionStatus(response.data);
     } catch (error) {
-      } finally {
+      logger.error('Failed to fetch subscription status', error);
+    } finally {
       setLoading(false);
     }
   };

@@ -35,7 +35,7 @@ class EmailService {
       });
 
       // Verify connection
-      this.transporter.verify((error, success) => {
+      this.transporter.verify((error, _success) => {
         if (error) {
           console.error('❌ Email configuration failed:', error);
         } else {
@@ -267,7 +267,8 @@ class EmailService {
     }
 
     try {
-      let { to, subject, template, variables, html, text } = options;
+      const { to, subject, template, variables, text, html: initialHtml } = options;
+      let html = initialHtml;
 
       // Render template if provided
       if (template && variables) {

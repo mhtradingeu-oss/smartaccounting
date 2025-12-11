@@ -1,4 +1,3 @@
-const logger = require('../lib/logger');
 const express = require('express');
 const { Company, User } = require('../models');
 const { authenticateToken, requireRole, requireCompany } = require('../middleware/auth');

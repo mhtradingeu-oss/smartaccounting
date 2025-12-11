@@ -1,6 +1,6 @@
 
 const GermanTaxUtils = require('../utils/germanTaxUtils');
-const { Transaction, Invoice, TaxReport } = require('../models');
+const { Transaction } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment');
 const logger = require('../lib/logger');

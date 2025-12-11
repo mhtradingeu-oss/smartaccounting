@@ -1,6 +1,4 @@
-const logger = require('../lib/logger');
 const { sequelize } = require('../lib/database');
-const { Op } = require('sequelize');
 
 class TaxAccountingEngine {
   constructor() {
@@ -107,7 +105,6 @@ class TaxAccountingEngine {
 
   classifyExpense(invoice) {
     const description = (invoice.description || '').toLowerCase();
-    const supplierName = (invoice.supplierName || '').toLowerCase();
 
     if (description.includes('miete') || description.includes('rent')) {
       return this.skr03Accounts.expenses.rent;

@@ -55,6 +55,19 @@ module.exports = {
         browser: true,
         es2021: true,
       },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      plugins: ['react', 'react-hooks'],
+      settings: {
+        react: {
+          version: 'detect',
+        },
+      },
       rules: {
         // Allow window, navigator, localStorage
         'no-undef': 'off',
@@ -64,6 +77,16 @@ module.exports = {
 
         // Allow console in frontend
         'no-console': 'off',
+
+        // JSX usage helpers
+        'react/jsx-uses-react': 'warn',
+        'react/jsx-uses-vars': 'warn',
+        'react/react-in-jsx-scope': 'off',
+        'react/prop-types': 'off',
+
+        // Hooks best practices
+        'react-hooks/rules-of-hooks': 'error',
+        'react-hooks/exhaustive-deps': 'warn',
       },
     },
 
@@ -93,4 +116,3 @@ module.exports = {
     '*.min.js',
   ],
 };
-

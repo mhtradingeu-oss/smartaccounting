@@ -16,7 +16,6 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon,
   XMarkIcon,
-  EllipsisVerticalIcon,
   BookmarkIcon,
   ClockIcon,
   CalendarDaysIcon,
@@ -26,6 +25,30 @@ import {
   BellIcon as BellIconSolid,
   UserCircleIcon as UserCircleIconSolid,
 } from '@heroicons/react/24/solid';
+
+const MOCK_SEARCH_RESULTS = [
+  {
+    type: 'invoice',
+    title: 'Invoice #2024-0156',
+    subtitle: 'Müller GmbH - €2,450.00',
+    href: '/invoices/2024-0156',
+    icon: CurrencyEuroIcon,
+  },
+  {
+    type: 'client',
+    title: 'Hans Schmidt GmbH',
+    subtitle: 'Client • 15 invoices',
+    href: '/clients/hans-schmidt',
+    icon: UserCircleIcon,
+  },
+  {
+    type: 'report',
+    title: 'VAT Report Q4 2024',
+    subtitle: 'Tax Report • Due Dec 31',
+    href: '/german-tax-reports/vat-q4-2024',
+    icon: BookmarkIcon,
+  },
+];
 
 const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
   const { t } = useTranslation();
@@ -97,30 +120,6 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
   ];
 
   // Mock search results
-  const mockSearchResults = [
-    {
-      type: 'invoice',
-      title: 'Invoice #2024-0156',
-      subtitle: 'Müller GmbH - €2,450.00',
-      href: '/invoices/2024-0156',
-      icon: CurrencyEuroIcon,
-    },
-    {
-      type: 'client',
-      title: 'Hans Schmidt GmbH',
-      subtitle: 'Client • 15 invoices',
-      href: '/clients/hans-schmidt',
-      icon: UserCircleIcon,
-    },
-    {
-      type: 'report',
-      title: 'VAT Report Q4 2024',
-      subtitle: 'Tax Report • Due Dec 31',
-      href: '/german-tax-reports/vat-q4-2024',
-      icon: BookmarkIcon,
-    },
-  ];
-
   const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
@@ -143,9 +142,9 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
   useEffect(() => {
     // Mock search functionality
     if (searchQuery.length > 2) {
-      const filtered = mockSearchResults.filter(item =>
+      const filtered = MOCK_SEARCH_RESULTS.filter(item =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
+        item.subtitle.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setSearchResults(filtered);
       setShowSearchResults(true);
@@ -190,14 +189,14 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
 
   const currentTime = new Date().toLocaleTimeString('de-DE', { 
     hour: '2-digit', 
-    minute: '2-digit' 
+    minute: '2-digit', 
   });
 
   const currentDate = new Date().toLocaleDateString('de-DE', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 
   return (

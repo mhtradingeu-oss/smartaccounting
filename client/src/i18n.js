@@ -90,7 +90,6 @@ i18n
           'generateReport': 'Generate Report',
           'ustReport': 'USt Report',
           'ustReportDescription': 'Umsatzsteuervoranmeldung',
-          'euerReport': 'EÜR Report', 
           'euerReportDescription': 'Einnahmenüberschussrechnung',
           'gewstReport': 'GewSt Report',
           'gewstReportDescription': 'Gewerbesteuer',

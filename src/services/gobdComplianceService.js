@@ -1,4 +1,5 @@
 
+const { Op } = require('sequelize');
 const { AuditLog } = require('../models');
 const crypto = require('crypto');
 

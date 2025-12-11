@@ -1,4 +1,4 @@
-const { Invoice, User, Transaction, TaxReport, BankTransaction, Company } = require('../models');
+const { Invoice, User, Transaction, TaxReport } = require('../models');
 const logger = require('../lib/logger');
 
 // Import Op for Sequelize operations

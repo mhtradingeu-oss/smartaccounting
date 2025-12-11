@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       logger.error('Login failed:', error);
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: error.response?.data?.message || 'Login failed', 
       };
     } finally {
       setLoading(false);
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     login,
     logout,
-    checkAuthStatus
+    checkAuthStatus,
   };
 
   return (

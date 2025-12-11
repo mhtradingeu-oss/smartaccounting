@@ -1,6 +1,5 @@
 
 const axios = require('axios');
-const fs = require('fs');
 const xml2js = require('xml2js');
 const crypto = require('crypto');
 const logger = require('../lib/logger');
@@ -240,7 +239,7 @@ class ElsterService {
 
       return {
         success: true,
-        status: 'connected',
+        status: response.data?.status || 'connected',
         apiVersion: this.apiVersion,
         testMode: this.testMode,
       };

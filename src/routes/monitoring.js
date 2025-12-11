@@ -14,7 +14,7 @@ router.get('/health', async (req, res) => {
     
     try {
       await sequelize.authenticate();
-      const dbQuery = await sequelize.query('SELECT 1 as test');
+      await sequelize.query('SELECT 1 as test');
       checks.database = {
         status: 'healthy',
         responseTime: Date.now() - startTime,
@@ -42,7 +42,7 @@ router.get('/health', async (req, res) => {
     }
 
     try {
-      const stats = await fs.stat(process.cwd());
+      await fs.stat(process.cwd());
       checks.diskSpace = {
         status: 'healthy',
         available: 'OK', 

@@ -1,18 +1,13 @@
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   CalculatorIcon,
   CurrencyEuroIcon,
   DocumentTextIcon,
   InformationCircleIcon,
-  ChartBarIcon,
-  BanknotesIcon,
-  ReceiptPercentIcon,
 } from '@heroicons/react/24/outline';
 
 const Calculator = () => {
-  const { t } = useTranslation();
   const [income, setIncome] = useState('');
   const [expenses, setExpenses] = useState('');
   const [vatRate, setVatRate] = useState('19');
@@ -41,10 +36,10 @@ const Calculator = () => {
 
   const calculateIncomeTax = (income) => {
     // Simplified German income tax calculation
-    if (income <= 10908) return 0;
-    if (income <= 15999) return income * 0.14;
-    if (income <= 62809) return income * 0.24;
-    if (income <= 277825) return income * 0.42;
+    if (income <= 10908) {return 0;}
+    if (income <= 15999) {return income * 0.14;}
+    if (income <= 62809) {return income * 0.24;}
+    if (income <= 277825) {return income * 0.42;}
     return income * 0.45;
   };
 

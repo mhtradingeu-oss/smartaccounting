@@ -1,17 +1,14 @@
-import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  // DEVELOPMENT MODE: AUTHENTICATION DISABLED
-  // Remove this bypass and uncomment the code below for production
-  return children;
-
-  /*
-  // PRODUCTION CODE (COMMENTED OUT FOR DEVELOPMENT)
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
+
+  if (process.env.REACT_APP_DISABLE_LOGIN === 'true') {
+    return children;
+  }
 
   if (loading) {
     return (
@@ -41,7 +38,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   return children;
-  */
 };
 
 export default ProtectedRoute;

@@ -1,7 +1,5 @@
-const logger = require('../lib/logger');
-
 const express = require('express');
-const { TaxReport, Company, Invoice } = require('../models');
+const { TaxReport, Company } = require('../models');
 const { authenticateToken, requireRole, requireCompany } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const { generateTaxReport } = require('../services/taxCalculator');

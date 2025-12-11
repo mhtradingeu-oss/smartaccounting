@@ -1,5 +1,3 @@
-const logger = require('../lib/logger');
-
 const csv = require('csv-parser');
 const fs = require('fs');
 const moment = require('moment');
@@ -89,7 +87,8 @@ class BankStatementService {
               transactions.push(transaction);
             }
           } catch (error) {
-            }
+            // TODO: implement
+          }
         })
         .on('end', () => {
           resolve(transactions);
@@ -178,7 +177,8 @@ class BankStatementService {
           transactions.push(transaction);
         }
       } catch (error) {
-        }
+        // TODO: implement
+      }
     }
     
     return transactions;
@@ -216,9 +216,8 @@ class BankStatementService {
     return transaction;
   }
 
-  async parseCAMT053File(filePath) {
+  async parseCAMT053File(_filePath) {
     
-    const content = fs.readFileSync(filePath, 'utf-8');
     const transactions = [];
 
     return transactions;
@@ -251,7 +250,8 @@ class BankStatementService {
 
         processedTransactions.push(bankTransaction);
       } catch (error) {
-        }
+        // TODO: implement
+      }
     }
 
     return processedTransactions;

@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dashboardAPI } from '../services/dashboardAPI';
 import { logger } from '../lib/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   ChartBarIcon,
-  UserGroupIcon,
-  CurrencyEuroIcon,
   DocumentTextIcon,
   ExclamationTriangleIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  XCircleIcon,
-  BellAlertIcon,
   BanknotesIcon,
   PlusIcon,
   EyeIcon,
   ArrowDownTrayIcon,
   CloudArrowUpIcon,
   DocumentChartBarIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import {
   CurrencyEuroIcon as CurrencyEuroIconSolid,
@@ -33,11 +29,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState('month');
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [selectedTimeframe]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const [statsResponse, monthlyResponse, taxResponse, uploadsResponse] = await Promise.all([
@@ -131,7 +123,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData, selectedTimeframe]);
 
   if (loading) {
     return (
@@ -157,7 +153,6 @@ const Dashboard = () => {
   }
 
   const stats = dashboardData?.stats || {};
-  const monthlyData = dashboardData?.monthlyData || {};
   const taxSummary = dashboardData?.taxSummary || {};
   const uploadStats = dashboardData?.uploadStats || {};
   const recentActivities = dashboardData?.recentActivities || [];
@@ -294,7 +289,7 @@ const Dashboard = () => {
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {t('dashboard.overview_subtitle', { 
-              date: formatDate(new Date().toISOString()) 
+              date: formatDate(new Date().toISOString()), 
             })}
           </p>
         </div>
@@ -560,7 +555,7 @@ const Dashboard = () => {
         </div>
 
         <div className="space-y-4">
-          {recentActivities.map((activity, index) => {
+          {recentActivities.map((activity) => {
             const ActivityIcon = getActivityIcon(activity.type);
             return (
               <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">

@@ -1,4 +1,3 @@
-const logger = require('../lib/logger');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { User, Company } = require('../models');
@@ -45,7 +44,8 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin']), asyn
       status: 'active',
     });
 
-    const { password: _, ...userResponse } = user.toJSON();
+    const userResponse = user.toJSON();
+    delete userResponse.password;
 
     res.status(201).json({
       message: 'User created successfully',
@@ -80,7 +80,8 @@ router.put('/:userId', authenticateToken, requireRole(['admin']), requireCompany
       status,
     });
 
-    const { password: _, ...userResponse } = user.toJSON();
+    const userResponse = user.toJSON();
+    delete userResponse.password;
 
     res.json({
       message: 'User updated successfully',

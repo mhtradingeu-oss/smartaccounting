@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 const GermanTaxCompliance = require('../services/germanTaxCompliance');
 const ElsterService = require('../services/elsterService');
 
-const taxCompliance = new GermanTaxCompliance();
+const germanTaxCompliance = new GermanTaxCompliance();
 const elsterService = new ElsterService();
 
 router.get('/eur/:year', auth, async (req, res) => {
@@ -144,12 +144,12 @@ router.post('/submit', auth, async (req, res) => {
     if (submitToElster) {
       try {
         elsterSubmission = await elsterService.submitTaxReport(taxReport, company);
-        } catch (elsterError) {
-        
+      } catch (elsterError) {
         elsterSubmission = {
           status: 'ELSTER_ERROR',
           error: elsterError.message,
         };
+        logger.error('ELSTER submission failed', elsterError);
       }
     }
 
@@ -165,7 +165,8 @@ router.post('/submit', auth, async (req, res) => {
         submittedBy: req.user.id,
       });
     } catch (dbError) {
-      }
+      logger.error('Failed to persist tax report', dbError);
+    }
 
     res.json({
       success: true,
@@ -187,6 +188,7 @@ router.post('/submit', auth, async (req, res) => {
       },
     });
   } catch (error) {
+    logger.error('Failed to submit tax report', error);
     res.status(500).json({
       success: false,
       message: 'Failed to submit tax report',

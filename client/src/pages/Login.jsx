@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Login = () => {
-  // LOGIN DISABLED: Redirect to dashboard if login is disabled
-  if (process.env.REACT_APP_DISABLE_LOGIN === "true") {
-    window.location.href = '/dashboard';
-    return null;
-  }
-
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, loading } = useAuth();
+  const loginDisabled = process.env.REACT_APP_DISABLE_LOGIN === 'true';
+  useEffect(() => {
+    if (loginDisabled) {
+      window.location.href = '/dashboard';
+    }
+  }, [loginDisabled]);
 
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,10 +26,10 @@ const Login = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
-    if (error) setError('');
+    if (error) {setError('');}
   };
 
   const handleSubmit = async (e) => {
@@ -66,6 +66,8 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (loginDisabled) {return null;}
 
   if (loading) {
     return (

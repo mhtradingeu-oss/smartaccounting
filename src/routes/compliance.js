@@ -1,8 +1,6 @@
-const logger = require('../lib/logger');
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
-const { body, validationResult } = require('express-validator');
 
 router.get('/test', (req, res) => {
   res.json({

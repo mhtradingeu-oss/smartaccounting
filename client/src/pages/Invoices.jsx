@@ -1,14 +1,12 @@
 import { logger } from '../lib/logger';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Invoices = () => {
-  const { user } = useAuth();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generatingPdf, setGeneratingPdf] = useState(null);
@@ -22,7 +20,8 @@ const Invoices = () => {
       const response = await api.get('/invoices');
       setInvoices(response.data);
     } catch (error) {
-      } finally {
+      logger.error('Failed to fetch invoices', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -50,14 +49,14 @@ const Invoices = () => {
     return new Date(dateString).toLocaleDateString('de-DE', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
     });
   };
 
   const formatCurrency = (amount, currency = 'EUR') => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
-      currency: currency
+      currency,
     }).format(amount);
   };
 
@@ -68,7 +67,7 @@ const Invoices = () => {
       approved: 'bg-blue-100 text-blue-800',
       paid: 'bg-green-100 text-green-800',
       overdue: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-100 text-gray-800'
+      cancelled: 'bg-gray-100 text-gray-800',
     };
 
     return (

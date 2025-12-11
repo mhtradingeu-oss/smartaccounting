@@ -1,5 +1,3 @@
-const logger = require('../lib/logger');
-
 const express = require('express');
 const router = express.Router();
 const ElsterService = require('../services/elsterService');
@@ -27,7 +25,7 @@ router.post('/submit',
         });
       }
 
-      const { reportType, year, month, quarter } = req.body;
+      const { year, month, quarter } = req.body;
       const companyId = req.user.companyId;
 
       let taxReportData;
@@ -130,7 +128,7 @@ router.get('/history', auth, async (req, res) => {
 
 router.post('/generate-xml', auth, async (req, res) => {
   try {
-    const { reportType, year, month } = req.body;
+    const { year, month } = req.body;
     const companyId = req.user.companyId;
 
     const taxReportData = await elsterService.processMonthlyData(companyId, year, month);

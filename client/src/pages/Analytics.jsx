@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   ChartBarIcon,
   CurrencyEuroIcon,
   ArrowUpIcon as ArrowTrendingUpIcon,
   ArrowDownIcon as ArrowTrendingDownIcon,
-  CalendarDaysIcon,
   ArrowDownTrayIcon,
   FunnelIcon,
-  ChartPieIcon,
-  BanknotesIcon,
-  DocumentChartBarIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Analytics = () => {
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('month');
   const [analyticsData, setAnalyticsData] = useState(null);

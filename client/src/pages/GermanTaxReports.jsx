@@ -1,4 +1,3 @@
-import { logger } from '../lib/logger';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Layout from '../components/Layout';
@@ -6,9 +5,8 @@ import Card from '../components/Card';
 import {
   DocumentTextIcon,
   ArrowDownTrayIcon,
-  CalendarIcon,
   ChartBarIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 const GermanTaxReports = () => {
@@ -19,7 +17,7 @@ const GermanTaxReports = () => {
   const reportTypes = [
     { id: 'ust', name: t('ustReport'), description: t('ustReportDescription') },
     { id: 'euer', name: t('euerReport'), description: t('euerReportDescription') },
-    { id: 'gewst', name: t('gewstReport'), description: t('gewstReportDescription') }
+    { id: 'gewst', name: t('gewstReport'), description: t('gewstReportDescription') },
   ];
 
   const periods = [
@@ -27,7 +25,7 @@ const GermanTaxReports = () => {
     { id: 'last-quarter', name: t('lastQuarter') },
     { id: 'current-year', name: t('currentYear') },
     { id: 'last-year', name: t('lastYear') },
-    { id: 'custom', name: t('customPeriod') }
+    { id: 'custom', name: t('customPeriod') },
   ];
 
   const generateReport = async () => {
@@ -176,7 +174,7 @@ const GermanTaxReports = () => {
               {[
                 { type: 'USt', period: 'Q4 2024', date: '2024-01-15', status: 'submitted' },
                 { type: 'EÜR', period: '2023', date: '2024-01-10', status: 'draft' },
-                { type: 'GewSt', period: '2023', date: '2024-01-05', status: 'submitted' }
+                { type: 'GewSt', period: '2023', date: '2024-01-05', status: 'submitted' },
               ].map((report, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center">

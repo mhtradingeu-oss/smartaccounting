@@ -1,4 +1,4 @@
-
+/* eslint-disable no-useless-escape */
 const Tesseract = require('tesseract.js');
 const sharp = require('sharp');
 const fs = require('fs');
@@ -441,3 +441,4 @@ class OCRService {
 }
 
 module.exports = new OCRService();
+/* eslint-enable no-useless-escape */

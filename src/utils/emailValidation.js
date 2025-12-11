@@ -1,6 +1,3 @@
-
-const crypto = require('crypto');
-
 class EmailValidation {
   static validateEnvironment() {
     const errors = [];

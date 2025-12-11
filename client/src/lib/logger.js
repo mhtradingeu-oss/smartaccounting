@@ -51,9 +51,9 @@ class Logger {
         }),
       });
     } catch (error) {
-      
       if (this.isDevelopment) {
-        }
+        console.error('Failed to send log to backend', error);
+      }
     }
   }
 }

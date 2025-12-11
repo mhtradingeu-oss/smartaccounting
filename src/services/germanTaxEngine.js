@@ -180,7 +180,7 @@ class GermanTaxEngine {
     };
   }
 
-  async getTransactions(companyId, startDate, endDate) {
+  async getTransactions(_companyId, _startDate, _endDate) {
     // Implementation would fetch from database
     // This is a placeholder structure
     return {
@@ -209,7 +209,7 @@ class GermanTaxEngine {
       .reduce((sum, t) => sum + t.amount, 0);
   }
 
-  async getAnnualRevenue(companyId, year) {
+  async getAnnualRevenue(_companyId, _year) {
     // Implementation would calculate from database
     return 0;
   }

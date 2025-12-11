@@ -24,13 +24,14 @@ const Billing = () => {
     try {
       const [statusResponse, historyResponse] = await Promise.all([
         api.get('/stripe/subscription-status'),
-        api.get('/stripe/billing-history')
+        api.get('/stripe/billing-history'),
       ]);
       
       setSubscriptionStatus(statusResponse.data);
       setBillingHistory(historyResponse.data);
     } catch (error) {
-      } finally {
+      logger.error('Failed to load billing data', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -73,7 +74,7 @@ const Billing = () => {
       past_due: 'bg-red-100 text-red-800',
       canceled: 'bg-gray-100 text-gray-800',
       incomplete: 'bg-yellow-100 text-yellow-800',
-      trialing: 'bg-blue-100 text-blue-800'
+      trialing: 'bg-blue-100 text-blue-800',
     };
 
     return (
@@ -87,14 +88,14 @@ const Billing = () => {
     return new Date(dateString).toLocaleDateString('de-DE', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   const formatCurrency = (amount, currency = 'EUR') => {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
-      currency: currency
+      currency,
     }).format(amount);
   };
 

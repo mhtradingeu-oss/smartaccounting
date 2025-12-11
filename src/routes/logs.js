@@ -2,7 +2,6 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../lib/logger');
-const { auth } = require('../middleware/auth');
 
 router.post('/', (req, res) => {
   try {

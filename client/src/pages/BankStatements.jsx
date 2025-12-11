@@ -1,15 +1,14 @@
 import { logger } from '../lib/logger';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Layout from '../components/Layout';
 import Card from '../components/Card';
-import LoadingSpinner from '../components/LoadingSpinner';
 import {
   CloudArrowUpIcon,
   DocumentTextIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  BanknotesIcon
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 const BankStatements = () => {
@@ -20,7 +19,7 @@ const BankStatements = () => {
   const [dragOver, setDragOver] = useState(false);
 
   const handleFileUpload = async (files) => {
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {return;}
 
     setLoading(true);
     setUploadProgress(0);
@@ -31,7 +30,6 @@ const BankStatements = () => {
       formData.append('bankStatement', file);
 
       try {
-        
         const progressInterval = setInterval(() => {
           setUploadProgress(prev => Math.min(prev + 10, 90));
         }, 100);
@@ -45,12 +43,13 @@ const BankStatements = () => {
           uploadDate: new Date().toISOString(),
           status: 'processed',
           transactions: Math.floor(Math.random() * 50) + 10,
-          balance: (Math.random() * 50000).toFixed(2)
+          balance: (Math.random() * 50000).toFixed(2),
         };
 
         setStatements(prev => [newStatement, ...prev]);
       } catch (error) {
-        }
+        logger.error('Failed to upload bank statement', { error, file: file.name });
+      }
     }
 
     setLoading(false);
