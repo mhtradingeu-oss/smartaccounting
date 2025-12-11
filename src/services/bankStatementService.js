@@ -1,8 +1,7 @@
 const csv = require('csv-parser');
 const fs = require('fs');
 const moment = require('moment');
-const BankStatement = require('../models/BankStatement');
-const BankTransaction = require('../models/BankTransaction');
+const { BankStatement, BankTransaction } = require('../models');
 
 class BankStatementService {
   constructor() {
@@ -327,7 +326,7 @@ class BankStatementService {
         where: {
           companyId,
           amount: bankTx.amount,
-          date: {
+          transactionDate: {
             [require('sequelize').Op.between]: [
               moment(bankTx.transactionDate).subtract(3, 'days').toDate(),
               moment(bankTx.transactionDate).add(3, 'days').toDate(),

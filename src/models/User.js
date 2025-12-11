@@ -13,6 +13,27 @@ class User extends Model {
       foreignKey: 'userId',
       as: 'invoices',
     });
+
+    if (models.Transaction) {
+      User.hasMany(models.Transaction, {
+        foreignKey: 'userId',
+        as: 'transactions',
+      });
+    }
+
+    if (models.AuditLog) {
+      User.hasMany(models.AuditLog, {
+        foreignKey: 'userId',
+        as: 'auditLogs',
+      });
+    }
+
+    if (models.FileAttachment) {
+      User.hasMany(models.FileAttachment, {
+        foreignKey: 'uploadedBy',
+        as: 'uploadedFiles',
+      });
+    }
   }
 
   toJSON() {

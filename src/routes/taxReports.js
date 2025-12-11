@@ -102,6 +102,7 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin', 'accou
     const taxReport = await TaxReport.create({
       companyId: req.user.companyId,
       reportType,
+      year: period.year || null,
       period: JSON.stringify(period),
       data: data || generatedData,
       status: 'draft',

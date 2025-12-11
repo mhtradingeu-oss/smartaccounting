@@ -62,7 +62,9 @@ class GermanTaxCompliance {
     };
 
     transactions.forEach(transaction => {
-      if (transaction.type === 'INCOME') {
+      const type = (transaction.type || '').toUpperCase();
+      
+      if (type === 'INCOME') {
         eurData.income.totalRevenue += parseFloat(transaction.amount);
 
         switch (transaction.vatRate) {
@@ -77,7 +79,7 @@ class GermanTaxCompliance {
           default:
             eurData.income.revenueByVatRate.exempt += parseFloat(transaction.amount);
         }
-      } else if (transaction.type === 'EXPENSE') {
+      } else if (type === 'EXPENSE') {
         eurData.expenses.totalExpenses += parseFloat(transaction.amount);
 
         this.categorizeExpense(transaction, eurData.expenses);
@@ -152,7 +154,9 @@ class GermanTaxCompliance {
     };
 
     transactions.forEach(transaction => {
-      if (transaction.type === 'INCOME') {
+      const type = (transaction.type || '').toUpperCase();
+
+      if (type === 'INCOME') {
         if (transaction.vatRate === 0.19) {
           vatReturn.taxableSupplies.standardRate.net += parseFloat(transaction.amount);
           vatReturn.taxableSupplies.standardRate.vat += parseFloat(transaction.amount) * 0.19;
@@ -167,7 +171,7 @@ class GermanTaxCompliance {
           vatReturn.taxableSupplies.exempt.net += parseFloat(transaction.amount);
           vatReturn.elsterFields.Kz41 += parseFloat(transaction.amount);
         }
-      } else if (transaction.type === 'EXPENSE' && transaction.vatRate > 0) {
+      } else if (type === 'EXPENSE' && transaction.vatRate > 0) {
         const inputVat = parseFloat(transaction.amount) * transaction.vatRate;
         if (transaction.vatRate === 0.19) {
           vatReturn.inputVat.standardRate += inputVat;
@@ -208,7 +212,8 @@ class GermanTaxCompliance {
       warnings: [],
     };
 
-    if (!transaction.date) {
+    const txnDate = transaction.transactionDate || transaction.date;
+    if (!txnDate) {
       compliance.violations.push('Missing transaction date');
       compliance.isCompliant = false;
     }
@@ -338,11 +343,11 @@ class GermanTaxCompliance {
     return await Transaction.findAll({
       where: {
         companyId,
-        date: {
+        transactionDate: {
           [require('sequelize').Op.between]: [startDate.toDate(), endDate.toDate()],
         },
       },
-      order: [['date', 'ASC']],
+      order: [['transactionDate', 'ASC']],
     });
   }
 
@@ -351,8 +356,8 @@ class GermanTaxCompliance {
     const result = await Transaction.sum('amount', {
       where: {
         companyId,
-        type: 'INCOME',
-        date: {
+        type: 'income',
+        transactionDate: {
           [require('sequelize').Op.between]: [
             new Date(`${year}-01-01`),
             new Date(`${year}-12-31`),

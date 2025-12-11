@@ -40,15 +40,15 @@ module.exports = (sequelize) => {
       field: 'document_type',
     },
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       field: 'user_id',
     },
     companyId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       field: 'company_id',
     },
     uploadedBy: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: false,
       field: 'uploaded_by',
     },

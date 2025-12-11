@@ -155,7 +155,7 @@ class DashboardService {
           where: {
             companyId,
             type: 'income',
-            date: {
+            transactionDate: {
               [Op.gte]: new Date(currentYear, 0, 1),
             },
           },
@@ -164,7 +164,7 @@ class DashboardService {
           where: {
             companyId,
             type: 'expense',
-            date: {
+            transactionDate: {
               [Op.gte]: new Date(currentYear, 0, 1),
             },
           },

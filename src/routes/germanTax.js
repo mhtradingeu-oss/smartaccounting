@@ -2,11 +2,8 @@ const logger = require('../lib/logger');
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const GermanTaxCompliance = require('../services/germanTaxCompliance');
-const ElsterService = require('../services/elsterService');
-
-const germanTaxCompliance = new GermanTaxCompliance();
-const elsterService = new ElsterService();
+const germanTaxCompliance = require('../services/germanTaxCompliance');
+const elsterService = require('../services/elsterService');
 
 router.get('/eur/:year', auth, async (req, res) => {
   try {
@@ -155,11 +152,15 @@ router.post('/submit', auth, async (req, res) => {
 
     try {
       const { TaxReport } = require('../models');
+      const reportYear = period?.year || new Date().getFullYear();
+      const reportPeriod = period ? JSON.stringify(period) : JSON.stringify({ year: reportYear });
+
       await TaxReport.create({
         companyId,
         reportType,
-        period,
-        data: JSON.stringify(data),
+        year: reportYear,
+        period: reportPeriod,
+        data,
         status: elsterSubmission?.status || 'GENERATED',
         elsterTransferTicket: elsterSubmission?.transferTicket,
         submittedBy: req.user.id,

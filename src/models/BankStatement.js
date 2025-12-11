@@ -5,28 +5,62 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    companyId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'companies',
+        key: 'id',
+      },
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+    },
     bankName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     accountNumber: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: 'UNKNOWN',
     },
     iban: {
       type: DataTypes.STRING,
+      allowNull: true,
     },
-    statementDate: {
-      type: DataTypes.DATE,
+    fileName: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
+    fileFormat: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    filePath: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    statementPeriodStart: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    statementPeriodEnd: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     openingBalance: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
       defaultValue: 0.00,
     },
     closingBalance: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
       defaultValue: 0.00,
     },
@@ -35,16 +69,23 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'EUR',
     },
-    filePath: {
-      type: DataTypes.STRING,
+    totalTransactions: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
-    userId: {
-      type: DataTypes.UUID,
+    processedTransactions: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    status: {
+      type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+      defaultValue: 'PROCESSING',
+    },
+    importDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   }, {
     tableName: 'bank_statements',
@@ -53,6 +94,7 @@ module.exports = (sequelize, DataTypes) => {
 
   BankStatement.associate = (models) => {
     BankStatement.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    BankStatement.belongsTo(models.Company, { foreignKey: 'companyId', as: 'company' });
     BankStatement.hasMany(models.BankTransaction, { foreignKey: 'bankStatementId', as: 'transactions' });
   };
 

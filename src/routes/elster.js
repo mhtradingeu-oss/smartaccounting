@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const ElsterService = require('../services/elsterService');
+const elsterService = require('../services/elsterService');
 const auth = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
-
-const elsterService = new ElsterService();
 
 router.post('/submit', 
   auth,

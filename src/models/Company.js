@@ -11,6 +11,31 @@ class Company extends Model {
       foreignKey: 'companyId',
       as: 'invoices',
     });
+
+    Company.hasMany(models.Transaction, {
+      foreignKey: 'companyId',
+      as: 'transactions',
+    });
+
+    Company.hasMany(models.BankStatement, {
+      foreignKey: 'companyId',
+      as: 'bankStatements',
+    });
+
+    Company.hasMany(models.BankTransaction, {
+      foreignKey: 'companyId',
+      as: 'bankTransactions',
+    });
+
+    Company.hasMany(models.TaxReport, {
+      foreignKey: 'companyId',
+      as: 'taxReports',
+    });
+
+    Company.hasMany(models.FileAttachment, {
+      foreignKey: 'companyId',
+      as: 'attachments',
+    });
   }
 }
 

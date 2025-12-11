@@ -5,40 +5,55 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    companyId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'companies',
+        key: 'id',
+      },
+    },
     reportType: {
-      type: DataTypes.ENUM('monthly', 'quarterly', 'yearly'),
+      type: DataTypes.STRING,
       allowNull: false,
     },
     period: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
     },
     year: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
-    taxData: {
+    data: {
       type: DataTypes.JSON,
       allowNull: false,
       defaultValue: {},
     },
     status: {
-      type: DataTypes.ENUM('draft', 'submitted', 'approved', 'rejected'),
+      type: DataTypes.STRING,
+      allowNull: false,
       defaultValue: 'draft',
+    },
+    generatedAt: {
+      type: DataTypes.DATE,
     },
     submittedAt: {
       type: DataTypes.DATE,
     },
-    elsterStatus: {
-      type: DataTypes.STRING,
-    },
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
+    submittedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
       references: {
         model: 'users',
         key: 'id',
       },
+    },
+    elsterStatus: {
+      type: DataTypes.STRING,
+    },
+    elsterTransferTicket: {
+      type: DataTypes.STRING,
     },
   }, {
     tableName: 'tax_reports',
@@ -46,7 +61,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   TaxReport.associate = (models) => {
-    TaxReport.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    TaxReport.belongsTo(models.Company, { foreignKey: 'companyId', as: 'Company' });
+    TaxReport.belongsTo(models.User, { foreignKey: 'submittedBy', as: 'submitter' });
   };
 
   return TaxReport;

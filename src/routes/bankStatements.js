@@ -4,8 +4,7 @@ const path = require('path');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
 const bankStatementService = require('../services/bankStatementService');
-const BankStatement = require('../models/BankStatement');
-const BankTransaction = require('../models/BankTransaction');
+const { BankStatement, BankTransaction } = require('../models');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

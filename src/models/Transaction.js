@@ -5,16 +5,33 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    date: {
+    companyId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'companies',
+        key: 'id',
+      },
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+    },
+    transactionDate: {
       type: DataTypes.DATE,
       allowNull: false,
+      field: 'transaction_date',
     },
     description: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     amount: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
     },
     currency: {
@@ -25,28 +42,43 @@ module.exports = (sequelize, DataTypes) => {
     type: {
       type: DataTypes.ENUM('income', 'expense'),
       allowNull: false,
+      set(value) {
+        this.setDataValue('type', (value || '').toLowerCase());
+      },
     },
     category: {
       type: DataTypes.STRING,
     },
     vatRate: {
       type: DataTypes.DECIMAL(5, 4),
-      defaultValue: 0.19,
+      defaultValue: 0.00,
     },
     vatAmount: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(12, 2),
       defaultValue: 0.00,
     },
     reference: {
       type: DataTypes.STRING,
     },
-    userId: {
+    nonDeductible: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    creditAmount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+    },
+    debitAmount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+    },
+    isReconciled: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    bankTransactionId: {
       type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+      allowNull: true,
     },
   }, {
     tableName: 'transactions',
@@ -55,6 +87,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Transaction.associate = (models) => {
     Transaction.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    Transaction.belongsTo(models.Company, { foreignKey: 'companyId', as: 'company' });
   };
 
   return Transaction;

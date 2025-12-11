@@ -5,36 +5,13 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    date: {
-      type: DataTypes.DATE,
+    companyId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    description: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    amount: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    currency: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: 'EUR',
-    },
-    type: {
-      type: DataTypes.ENUM('debit', 'credit'),
-      allowNull: false,
-    },
-    reference: {
-      type: DataTypes.STRING,
-    },
-    category: {
-      type: DataTypes.STRING,
-    },
-    isReconciled: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      references: {
+        model: 'companies',
+        key: 'id',
+      },
     },
     bankStatementId: {
       type: DataTypes.UUID,
@@ -44,6 +21,47 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
+    transactionDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    valueDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    amount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+    },
+    currency: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'EUR',
+    },
+    transactionType: {
+      type: DataTypes.ENUM('DEBIT', 'CREDIT'),
+      allowNull: false,
+    },
+    reference: {
+      type: DataTypes.STRING,
+    },
+    category: {
+      type: DataTypes.STRING,
+    },
+    vatCategory: {
+      type: DataTypes.STRING,
+    },
+    counterpartyName: {
+      type: DataTypes.STRING,
+    },
+    isReconciled: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   }, {
     tableName: 'bank_transactions',
     timestamps: true,
@@ -51,6 +69,7 @@ module.exports = (sequelize, DataTypes) => {
 
   BankTransaction.associate = (models) => {
     BankTransaction.belongsTo(models.BankStatement, { foreignKey: 'bankStatementId', as: 'bankStatement' });
+    BankTransaction.belongsTo(models.Company, { foreignKey: 'companyId', as: 'company' });
   };
 
   return BankTransaction;
