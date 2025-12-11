@@ -1,5 +1,5 @@
 const logger = require('../lib/logger');
-const { sequelize } = require('../config/database');
+const { sequelize } = require('../lib/database');
 const { Op } = require('sequelize');
 
 class TaxAccountingEngine {

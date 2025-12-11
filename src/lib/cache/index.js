@@ -1,5 +1,14 @@
-const Redis = require('ioredis');
 const logger = require('../logger');
+
+let Redis;
+try {
+  Redis = require('ioredis');
+} catch (error) {
+  Redis = null;
+  logger.warn('ioredis is not installed; Redis cache disabled', {
+    error: error.message
+  });
+}
 
 class CacheManager {
   constructor() {
@@ -12,7 +21,7 @@ class CacheManager {
       deletes: 0
     };
 
-    if (process.env.REDIS_URL) {
+    if (Redis && process.env.REDIS_URL) {
       this.redis = new Redis(process.env.REDIS_URL, {
         retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
@@ -25,6 +34,10 @@ class CacheManager {
 
       this.redis.on('error', (err) => {
         logger.warn('Redis cache error, falling back to memory cache', { error: err.message });
+      });
+
+      this.redis.connect().catch((err) => {
+        logger.warn('Redis cache failed to connect, using memory cache', { error: err.message });
       });
     }
 

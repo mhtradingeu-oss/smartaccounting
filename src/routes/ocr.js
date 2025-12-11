@@ -1,345 +1,189 @@
-const logger = require('../lib/logger');
-
 const express = require('express');
-const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
-const { authenticateToken, requireRole } = require('../middleware/auth');
-const OCRService = require('../services/ocrService');
+const multer = require('multer');
+const { body, validationResult } = require('express-validator');
 const { FileAttachment } = require('../models');
-
-const router = express.Router();
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    
-    const uploadsDir = 'uploads/documents';
-    const ocrTempDir = 'temp/ocr';
-    
-    if (!require('fs').existsSync(uploadsDir)) {
-      require('fs').mkdirSync(uploadsDir, { recursive: true });
-    }
-    if (!require('fs').existsSync(ocrTempDir)) {
-      require('fs').mkdirSync(ocrTempDir, { recursive: true });
-    }
-    
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, 
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|pdf/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only images (JPEG, JPG, PNG) and PDF files are allowed'));
-    }
-  }
-});
-
-router.post('/process', authenticateToken, upload.single('document'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const { documentType = 'OTHER' } = req.body;
-    const filePath = req.file.path;
-
-    const ocrResult = documentType === 'RECEIPT' 
-      ? await OCRService.processReceiptOCR(filePath)
-      : await OCRService.processDocument(filePath);
-
-    const fileAttachment = await FileAttachment.create({
-      companyId: req.user.companyId,
-      originalFilename: req.file.originalname,
-      storedFilename: req.file.filename,
-      filePath: filePath,
-      fileSize: req.file.size,
-      mimeType: req.file.mimetype,
-      fileHash: require('crypto').createHash('sha256').update(require('fs').readFileSync(filePath)).digest('hex'),
-      documentType: documentType,
-      ocrProcessed: true,
-      ocrText: ocrResult.text,
-      ocrConfidence: ocrResult.confidence,
-      ocrLanguage: 'deu+eng',
-      extractedData: ocrResult.extractedData,
-      uploadedBy: req.user.id,
-      processingStatus: 'COMPLETED'
-    });
-
-    res.json({
-      message: 'OCR processing completed successfully',
-      fileId: fileAttachment.id,
-      extractedData: ocrResult.extractedData,
-      confidence: ocrResult.confidence,
-      ocrText: ocrResult.text
-    });
-
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'OCR processing failed',
-      details: error.message 
-    });
-  }
-});
-
-router.get('/results/:fileId', authenticateToken, async (req, res) => {
-  try {
-    const fileAttachment = await FileAttachment.findOne({
-      where: {
-        id: req.params.fileId,
-        companyId: req.user.companyId
-      }
-    });
-
-    if (!fileAttachment) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    res.json({
-      id: fileAttachment.id,
-      originalFilename: fileAttachment.originalFilename,
-      documentType: fileAttachment.documentType,
-      ocrProcessed: fileAttachment.ocrProcessed,
-      ocrText: fileAttachment.ocrText,
-      ocrConfidence: fileAttachment.ocrConfidence,
-      extractedData: fileAttachment.extractedData,
-      uploadDate: fileAttachment.createdAt
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve OCR results' });
-  }
-});
-
-router.post('/reprocess/:fileId', authenticateToken, requireRole(['admin', 'accountant']), async (req, res) => {
-  try {
-    const fileAttachment = await FileAttachment.findOne({
-      where: {
-        id: req.params.fileId,
-        companyId: req.user.companyId
-      }
-    });
-
-    if (!fileAttachment) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    const ocrResult = await OCRService.processDocument(fileAttachment.filePath);
-
-    await fileAttachment.update({
-      ocrProcessed: true,
-      ocrText: ocrResult.text,
-      ocrConfidence: ocrResult.confidence,
-      extractedData: ocrResult.extractedData,
-      processingStatus: 'COMPLETED'
-    });
-
-    res.json({
-      message: 'OCR reprocessing completed successfully',
-      extractedData: ocrResult.extractedData,
-      confidence: ocrResult.confidence
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: 'OCR reprocessing failed' });
-  }
-});
-
-router.get('/test', async (req, res) => {
-  try {
-    const testResult = await OCRService.testOCR();
-    res.json({
-      message: 'OCR service test completed',
-      result: testResult,
-      directories: {
-        uploads: 'uploads/documents',
-        temp: 'temp/ocr'
-      },
-      status: testResult.success ? 'ready' : 'error'
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'OCR test failed',
-      details: error.message 
-    });
-  }
-});
-
-router.post('/extract', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const { documentType = 'INVOICE' } = req.body;
-    const filePath = req.file.path;
-
-    const ocrResult = documentType === 'RECEIPT' 
-      ? await OCRService.processReceiptOCR(filePath)
-      : await OCRService.processDocument(filePath);
-
-    setTimeout(() => {
-      try {
-        require('fs').unlinkSync(filePath);
-        } catch (cleanupError) {
-        }
-    }, 5000);
-
-    if (!ocrResult.success) {
-      return res.status(500).json({
-        error: 'OCR processing failed',
-        details: ocrResult.error
-      });
-    }
-
-    res.json({
-      success: true,
-      extractedText: ocrResult.text,
-      confidence: ocrResult.confidence,
-      vendor: ocrResult.extractedData?.vendor,
-      amount: ocrResult.extractedData?.amount,
-      date: ocrResult.extractedData?.date,
-      invoiceNumber: ocrResult.extractedData?.invoiceNumber,
-      items: ocrResult.extractedData?.items || [],
-      structuredData: ocrResult.extractedData
-    });
-
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'OCR extraction failed',
-      details: error.message 
-    });
-  }
-});
-
-module.exports = router;
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const { authenticate } = require('../middleware/auth');
 const ocrService = require('../services/ocrService');
+const { authenticate, requireCompany, requireRole } = require('../middleware/authMiddleware');
 const logger = require('../lib/logger');
+const { sendSuccess, sendError } = require('../utils/responseHelpers');
 
-// Configure multer for file uploads
+const router = express.Router();
+const uploadsPath = path.join(process.cwd(), 'uploads', 'ocr');
+const tempPath = path.join(process.cwd(), 'temp', 'ocr');
+
+const ensureDirectory = (directory) => {
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
+};
+
+[uploadsPath, tempPath].forEach(ensureDirectory);
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'temp/ocr/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
+  destination: (req, _, cb) => cb(null, uploadsPath),
+  filename: (_, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
 const upload = multer({
   storage,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/tiff', 'application/pdf'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, TIFF, and PDF are allowed.'));
-    }
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (_, file, cb) => {
+    const allowed = /jpeg|jpg|png|pdf|tiff/;
+    const isAllowed =
+      allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype);
+    cb(isAllowed ? null : new Error('Invalid file type'), isAllowed);
   }
 });
 
-// Process document with OCR
-router.post('/process', authenticate, upload.single('document'), async (req, res) => {
+const validateDocument = [
+  body('documentType')
+    .optional()
+    .isIn(['invoice', 'receipt', 'bank_statement', 'tax_document'])
+    .withMessage('Unsupported document type')
+];
+
+const handleValidation = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Invalid input', 400, errors.array());
+  }
+  return null;
+};
+
+router.use(authenticate);
+router.use(requireCompany);
+
+router.post('/process', upload.single('document'), validateDocument, async (req, res) => {
+  if (handleValidation(req, res)) return;
+
+  if (!req.file) {
+    return sendError(res, 'No document uploaded', 400);
+  }
+
   try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        error: 'No file uploaded'
-      });
-    }
+    const documentType = req.body.documentType || 'invoice';
 
-    const { documentType = 'receipt', language = 'deu+eng' } = req.body;
-
-    const result = await ocrService.processDocument(req.file.path, {
-      language,
+    const ocrResult = await ocrService.processDocument(req.file.path, {
       documentType,
-      userId: req.user.id,
-      companyId: req.user.companyId
+      userId: req.userId,
+      companyId: req.companyId
     });
 
-    res.json(result);
+    if (!ocrResult.success) {
+      throw new Error(ocrResult.error || 'OCR processing failed');
+    }
+
+    const documentRecord = await FileAttachment.create({
+      fileName: req.file.filename,
+      originalName: req.file.originalname,
+      filePath: req.file.path,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      userId: req.userId,
+      companyId: req.companyId,
+      uploadedBy: req.userId,
+      documentType,
+      fileHash: ocrResult.hash || null,
+      ocrText: ocrResult.text,
+      ocrConfidence: ocrResult.confidence,
+      processingStatus: 'processed',
+      extractedData: ocrResult.extractedData
+    });
+
+    return sendSuccess(res, 'Document processed', {
+      document: documentRecord,
+      ocrResult
+    });
   } catch (error) {
-    logger.error('OCR processing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process document'
-    });
+    logger.error('OCR processing failed', { error: error.message });
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    return sendError(res, 'Unable to process document', 500);
   }
 });
 
-// Search archived documents
-router.get('/search', authenticate, async (req, res) => {
+router.get('/results/:fileId', async (req, res) => {
   try {
-    const {
-      documentType,
-      dateFrom,
-      dateTo,
-      vendor,
-      minAmount,
-      maxAmount
-    } = req.query;
+    const file = await FileAttachment.findOne({
+      where: { id: req.params.fileId, companyId: req.companyId }
+    });
 
+    if (!file) {
+      return sendError(res, 'Document not found', 404);
+    }
+
+    return sendSuccess(res, 'Document retrieved', { document: file });
+  } catch (error) {
+    logger.error('OCR results fetch failed', { error: error.message });
+    return sendError(res, 'Failed to fetch OCR results', 500);
+  }
+});
+
+router.post('/reprocess/:fileId', requireRole('admin', 'accountant'), async (req, res) => {
+  try {
+    const file = await FileAttachment.findOne({
+      where: { id: req.params.fileId, companyId: req.companyId }
+    });
+
+    if (!file) {
+      return sendError(res, 'Document not found', 404);
+    }
+
+    const ocrResult = await ocrService.processDocument(file.filePath, {
+      documentType: file.documentType || 'invoice',
+      userId: req.userId,
+      companyId: req.companyId
+    });
+
+    await file.update({
+      processingStatus: ocrResult.success ? 'processed' : 'failed',
+      ocrText: ocrResult.text,
+      ocrConfidence: ocrResult.confidence,
+      extractedData: ocrResult.extractedData
+    });
+
+    return sendSuccess(res, 'Document reprocessed', { ocrResult });
+  } catch (error) {
+    logger.error('OCR reprocessing failed', { error: error.message });
+    return sendError(res, 'Reprocessing failed', 500);
+  }
+});
+
+router.get('/search', async (req, res) => {
+  try {
     const criteria = {
-      documentType,
-      dateFrom,
-      dateTo,
-      vendor,
-      minAmount: minAmount ? parseFloat(minAmount) : undefined,
-      maxAmount: maxAmount ? parseFloat(maxAmount) : undefined
+      companyId: req.companyId,
+      ...req.query
     };
-
     const documents = await ocrService.searchDocuments(criteria);
-
-    res.json({
-      success: true,
-      documents,
-      count: documents.length
-    });
+    return sendSuccess(res, 'Documents found', { count: documents.length, documents });
   } catch (error) {
-    logger.error('Document search error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search documents'
-    });
+    logger.error('OCR search failed', { error: error.message });
+    return sendError(res, 'Search failed', 500);
   }
 });
 
-// Validate document integrity
-router.get('/validate/:documentId', authenticate, async (req, res) => {
+router.get('/validate/:documentId', async (req, res) => {
   try {
-    const { documentId } = req.params;
-    
-    const validation = await ocrService.validateDocumentIntegrity(documentId);
+    const file = await FileAttachment.findOne({
+      where: { id: req.params.documentId, companyId: req.companyId }
+    });
 
-    res.json({
-      success: true,
-      validation
-    });
+    if (!file) {
+      return sendError(res, 'Document not found', 404);
+    }
+
+    const validation = await ocrService.validateDocumentIntegrity(file.id);
+    return sendSuccess(res, 'Document validated', { validation });
   } catch (error) {
-    logger.error('Document validation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to validate document'
-    });
+    logger.error('OCR validation failed', { error: error.message });
+    return sendError(res, 'Validation failed', 500);
   }
 });
 

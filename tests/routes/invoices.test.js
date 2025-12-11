@@ -3,15 +3,19 @@ const request = require('supertest');
 const express = require('express');
 const invoiceRoutes = require('../../src/routes/invoices');
 const { Invoice, User } = require('../../src/models');
-const authMiddleware = require('../../src/middleware/authMiddleware');
-
-// Mock auth middleware for testing
-jest.mock('../../src/middleware/authMiddleware', () => {
-  return (req, res, next) => {
-    req.user = { id: 1, role: 'admin' };
+jest.mock('../../src/middleware/authMiddleware', () => ({
+  authenticate: (req, res, next) => {
+    req.user = { id: 1, role: 'admin', companyId: 'test-company-id' };
+    req.userId = req.user.id;
+    req.companyId = req.user.companyId;
     next();
-  };
-});
+  },
+  requireCompany: (req, res, next) => {
+    req.companyId = req.companyId || 'test-company-id';
+    next();
+  },
+  requireRole: () => (req, res, next) => next()
+}));
 
 const app = express();
 app.use(express.json());
@@ -28,13 +32,16 @@ describe('Invoice Routes', () => {
     test('should get all invoices', async () => {
       // Create test invoice
       await Invoice.create({
-        number: 'INV-001',
-        amount: 1000.00,
+        invoiceNumber: 'INV-001',
+        date: new Date(),
+        dueDate: new Date(),
+        clientName: 'Test Client',
+        subtotal: 1000.0,
+        total: 1000.0,
         currency: 'EUR',
         status: 'paid',
-        issueDate: new Date(),
-        dueDate: new Date(),
-        userId: testUser.id
+        userId: testUser.id,
+        companyId: testUser.companyId
       });
 
       const response = await request(app)
@@ -48,15 +55,15 @@ describe('Invoice Routes', () => {
 
   describe('POST /api/invoices', () => {
     test('should create new invoice', async () => {
-      const invoiceData = {
-        number: 'INV-002',
-        amount: 1500.00,
-        currency: 'EUR',
-        status: 'pending',
-        issueDate: new Date(),
-        dueDate: new Date(),
-        clientName: 'Test Client'
-      };
+    const invoiceData = {
+      invoiceNumber: 'INV-002',
+      amount: 1500.0,
+      currency: 'EUR',
+      status: 'pending',
+      issueDate: new Date(),
+      dueDate: new Date(),
+      clientName: 'Test Client'
+    };
 
       const response = await request(app)
         .post('/api/invoices')
@@ -64,7 +71,7 @@ describe('Invoice Routes', () => {
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('invoice');
-      expect(response.body.invoice.number).toBe(invoiceData.number);
+      expect(response.body.invoice.invoiceNumber).toBe(invoiceData.invoiceNumber);
     });
 
     test('should validate required fields', async () => {

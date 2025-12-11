@@ -1,9 +1,10 @@
 
+process.env.NODE_ENV = 'test';
+process.env.DATABASE_URL = 'sqlite::memory:';
 const { sequelize } = require('../src/models');
 
 module.exports = async () => {
   // Set test environment
-  process.env.NODE_ENV = 'test';
   process.env.DB_NAME = 'smartaccounting_test';
   
   // Create test database

@@ -386,7 +386,7 @@ class GermanTaxCompliance {
   }
 
   validateElsterXML(xml) {
-    
+   
     try {
       
       return {
@@ -399,6 +399,62 @@ class GermanTaxCompliance {
         errors: [error.message]
       };
     }
+  }
+
+  calculateVAT(amount, rateKey = 'standard') {
+    const rates = {
+      standard: 0.19,
+      reduced: 0.07,
+      exempt: 0.0
+    };
+
+    const rate = rates[rateKey.toLowerCase()] ?? 0;
+    return Number((parseFloat(amount || 0) * rate).toFixed(2));
+  }
+
+  async generateQuarterlyReport({ quarter, year, transactions = [] }) {
+    const totalRevenue = transactions.reduce((sum, txn) => sum + (Number(txn.amount) || 0), 0);
+    const totalVAT = transactions.reduce((sum, txn) => sum + (Number(txn.vatAmount) || 0), 0);
+
+    return {
+      period: { year, quarter },
+      totalRevenue,
+      totalVAT,
+      transactionCount: transactions.length,
+      insights: [
+        `Quarter ${quarter} revenue: €${totalRevenue.toFixed(2)}`,
+        `VAT collected: €${totalVAT.toFixed(2)}`
+      ]
+    };
+  }
+
+  validateInvoiceCompliance(invoice = {}) {
+    const errors = [];
+    const numberPattern = /^INV-\d{4}-\d{3}$/;
+
+    if (!invoice.number || !numberPattern.test(invoice.number)) {
+      errors.push('Invoice number must follow INV-YYYY-NNN format');
+    }
+    if (!invoice.issueDate) {
+      errors.push('Issue date is required');
+    }
+    if (!invoice.amount) {
+      errors.push('Amount is required');
+    }
+    if (!invoice.vatAmount && invoice.vatAmount !== 0) {
+      errors.push('VAT amount is required (can be 0)');
+    }
+    if (!invoice.clientName) {
+      errors.push('Client name is required');
+    }
+    if (!invoice.clientAddress) {
+      errors.push('Client address is required');
+    }
+
+    return {
+      isCompliant: errors.length === 0,
+      errors
+    };
   }
 }
 

@@ -1,3 +1,16 @@
 
-// This file is deprecated - use authMiddleware.js instead
-module.exports = require('./authMiddleware').authenticate;
+// Compatibility layer: expose helpers consumed by legacy routes
+const {
+  authenticate,
+  authorize,
+  requireAdmin,
+  requireCompany: requireCompanyMiddleware
+} = require('./authMiddleware');
+
+module.exports = {
+  authenticateToken: authenticate,
+  requireRole: authorize,
+  requireAdmin,
+  requireCompany: requireCompanyMiddleware,
+  auth: authenticate
+};

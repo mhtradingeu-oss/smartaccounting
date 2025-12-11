@@ -1,27 +1,13 @@
-/**
- * MODELS INDEX — CLEANED VERSION
- * SmartAccounting — Sequelize model bootstrapping
- */
+const { sequelize, syncDatabase } = require('../lib/database');
+const defineUser = require('./User');
+const defineCompany = require('./Company');
+const defineInvoice = require('./Invoice');
 
-const { sequelize, Sequelize } = require('../config/database');
-const { DataTypes } = Sequelize;
+const User = defineUser(sequelize);
+const Company = defineCompany(sequelize);
+const Invoice = defineInvoice(sequelize);
 
-const modelFactories = {
-  User: require('./User'),
-  Company: require('./Company'),
-  Invoice: require('./Invoice'),
-  Transaction: require('./Transaction'),
-  BankStatement: require('./BankStatement'),
-  BankTransaction: require('./BankTransaction'),
-  TaxReport: require('./TaxReport'),
-  AuditLog: require('./AuditLog'),
-  FileAttachment: require('./FileAttachment')
-};
-
-const models = Object.entries(modelFactories).reduce((acc, [name, defineModel]) => {
-  acc[name] = defineModel(sequelize, DataTypes);
-  return acc;
-}, {});
+const models = { User, Company, Invoice };
 
 Object.values(models).forEach((model) => {
   if (typeof model.associate === 'function') {
@@ -29,20 +15,8 @@ Object.values(models).forEach((model) => {
   }
 });
 
-const syncDatabase = async (options = {}) => {
-  try {
-    await sequelize.authenticate();
-    await sequelize.sync({ alter: false, ...options });
-    console.info('✅ Database synced');
-  } catch (err) {
-    console.error('❌ Database sync error:', err);
-    throw err;
-  }
-};
-
 module.exports = {
   sequelize,
-  Sequelize,
   syncDatabase,
   ...models
 };

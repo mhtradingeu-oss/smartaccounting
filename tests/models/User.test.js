@@ -14,7 +14,7 @@ describe('User Model', () => {
       };
 
       const user = await User.create(userData);
-      
+
       expect(user.email).toBe(userData.email);
       expect(user.firstName).toBe(userData.firstName);
       expect(user.role).toBe(userData.role);

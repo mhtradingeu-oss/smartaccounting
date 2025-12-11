@@ -31,10 +31,51 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       field: 'mime_type'
     },
+    fileHash: {
+      type: DataTypes.STRING,
+      field: 'file_hash'
+    },
+    documentType: {
+      type: DataTypes.STRING,
+      field: 'document_type'
+    },
+    userId: {
+      type: DataTypes.UUID,
+      field: 'user_id'
+    },
+    companyId: {
+      type: DataTypes.UUID,
+      field: 'company_id'
+    },
     uploadedBy: {
       type: DataTypes.UUID,
       allowNull: false,
       field: 'uploaded_by'
+    },
+    ocrText: {
+      type: DataTypes.TEXT,
+      field: 'ocr_text'
+    },
+    ocrConfidence: {
+      type: DataTypes.FLOAT,
+      field: 'ocr_confidence'
+    },
+    extractedData: {
+      type: DataTypes.JSON,
+      field: 'extracted_data'
+    },
+    processingStatus: {
+      type: DataTypes.STRING,
+      field: 'processing_status'
+    },
+    archived: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    retentionPeriod: {
+      type: DataTypes.INTEGER,
+      field: 'retention_period',
+      defaultValue: 10
     },
     entityType: {
       type: DataTypes.STRING,
@@ -54,6 +95,14 @@ module.exports = (sequelize) => {
     FileAttachment.belongsTo(models.User, { 
       foreignKey: 'uploadedBy', 
       as: 'uploader' 
+    });
+    FileAttachment.belongsTo(models.Company, {
+      foreignKey: 'companyId',
+      as: 'company'
+    });
+    FileAttachment.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
     });
   };
 

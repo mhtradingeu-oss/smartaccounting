@@ -1,216 +1,107 @@
 const express = require('express');
-const router = express.Router();
 const emailService = require('../services/emailService');
 const EmailValidation = require('../utils/emailValidation');
-const { authenticateToken, requireRole } = require('../middleware/authMiddleware');
+const { authenticate, authorize } = require('../middleware/authMiddleware');
+const { sendSuccess, sendError } = require('../utils/responseHelpers');
+const logger = require('../lib/logger');
 
-router.get('/test-config', authenticateToken, requireRole(['admin']), async (req, res) => {
+const router = express.Router();
+const requireAdmin = authorize('admin');
+
+const ensureEmail = (value) => {
+  if (!EmailValidation.validateEmailFormat(value)) {
+    throw new Error('Invalid email address');
+  }
+  return true;
+};
+
+router.use(authenticate);
+
+router.get('/test-config', requireAdmin, (req, res) => {
   try {
     const validation = EmailValidation.validateEnvironment();
-
-    res.json({
+    return sendSuccess(res, 'Email configuration validated', {
       isConfigured: emailService.isConfigured,
       validation: {
-        isValid: validation.isValid,
-        errors: validation.errors,
-        warnings: validation.warnings,
+        ...validation,
         configuration: {
           ...validation.configuration,
-          user: EmailValidation.sanitizeEmailForLog(validation.configuration.user)
+          user: EmailValidation.sanitizeEmailForLog(validation.configuration?.user)
         }
       }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Email configuration test failed', { error: error.message });
+    return sendError(res, error.message, 500);
   }
 });
 
-router.post('/test-connection', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.post('/test-connection', requireAdmin, async (_, res) => {
   try {
     const result = await emailService.testConnection();
-    res.json(result);
+    return sendSuccess(res, 'Connection test completed', { result });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Email connection test failed', { error: error.message });
+    return sendError(res, error.message, 500);
   }
 });
 
-router.post('/send-test', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.post('/send-test', requireAdmin, async (req, res) => {
   try {
-    const { to } = req.body;
-    const testEmail = to || req.user.email;
+    const to = req.body.to || req.user.email;
+    ensureEmail(to);
 
-    if (!EmailValidation.validateEmailFormat(testEmail)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    const result = await emailService.sendTestEmail(testEmail);
-    res.json(result);
+    const result = await emailService.sendTestEmail(to);
+    return sendSuccess(res, 'Test email sent', { result });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Send test email failed', { error: error.message });
+    return sendError(res, error.message, 400);
   }
 });
 
-router.post('/test-template/:type', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.post('/test-template/:type', requireAdmin, async (req, res) => {
   try {
-    const { type } = req.params;
-    const { to } = req.body;
-    const testEmail = to || req.user.email;
+    const to = req.body.to || req.user.email;
+    ensureEmail(to);
 
-    if (!EmailValidation.validateEmailFormat(testEmail)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
+    const companyName = req.user.company?.name || 'Test Company GmbH';
+    const templateType = req.params.type;
     let result;
-    const companyName = req.user.company || 'Test Company GmbH';
 
-    switch (type) {
+    switch (templateType) {
       case 'tax-deadline':
         result = await emailService.sendTaxDeadlineAlert(
-          testEmail,
+          to,
           companyName,
           new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
           'Test Umsatzsteuer-Voranmeldung'
         );
         break;
-
       case 'invoice':
         result = await emailService.sendNewInvoiceAlert(
-          testEmail,
+          to,
           companyName,
           'TEST-INV-2024-001',
           '1,234.56'
         );
         break;
-
       case 'subscription':
         result = await emailService.sendSubscriptionExpiryAlert(
-          testEmail,
+          to,
           companyName,
           'Professional',
           new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
           7
         );
         break;
-
       default:
-        return res.status(400).json({ error: 'Invalid template type' });
+        return sendError(res, 'Invalid template type', 400);
     }
 
-    res.json(result);
+    return sendSuccess(res, 'Template email sent', { result });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-module.exports = router;
-```
-
-```text
-The code applies updates to the email service integration, specifically focusing on using the singleton instance of the email service in the test routes.
-</text>
-
-```javascript
-const express = require('express');
-const router = express.Router();
-const emailService = require('../services/emailService');
-const EmailValidation = require('../utils/emailValidation');
-const { authenticateToken, requireRole } = require('../middleware/authMiddleware');
-
-router.get('/test-config', authenticateToken, requireRole(['admin']), async (req, res) => {
-  try {
-    const validation = EmailValidation.validateEnvironment();
-
-    res.json({
-      isConfigured: emailService.isConfigured,
-      validation: {
-        isValid: validation.isValid,
-        errors: validation.errors,
-        warnings: validation.warnings,
-        configuration: {
-          ...validation.configuration,
-          user: EmailValidation.sanitizeEmailForLog(validation.configuration.user)
-        }
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/test-connection', authenticateToken, requireRole(['admin']), async (req, res) => {
-  try {
-    const result = await emailService.testConnection();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/send-test', authenticateToken, requireRole(['admin']), async (req, res) => {
-  try {
-    const { to } = req.body;
-    const testEmail = to || req.user.email;
-
-    if (!EmailValidation.validateEmailFormat(testEmail)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    const result = await emailService.sendTestEmail(testEmail);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/test-template/:type', authenticateToken, requireRole(['admin']), async (req, res) => {
-  try {
-    const { type } = req.params;
-    const { to } = req.body;
-    const testEmail = to || req.user.email;
-
-    if (!EmailValidation.validateEmailFormat(testEmail)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    let result;
-    const companyName = req.user.company || 'Test Company GmbH';
-
-    switch (type) {
-      case 'tax-deadline':
-        result = await emailService.sendTaxDeadlineAlert(
-          testEmail,
-          companyName,
-          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
-          'Test Umsatzsteuer-Voranmeldung'
-        );
-        break;
-
-      case 'invoice':
-        result = await emailService.sendNewInvoiceAlert(
-          testEmail,
-          companyName,
-          'TEST-INV-2024-001',
-          '1,234.56'
-        );
-        break;
-
-      case 'subscription':
-        result = await emailService.sendSubscriptionExpiryAlert(
-          testEmail,
-          companyName,
-          'Professional',
-          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
-          7
-        );
-        break;
-
-      default:
-        return res.status(400).json({ error: 'Invalid template type' });
-    }
-
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    logger.error('Template email failed', { error: error.message });
+    return sendError(res, error.message, 400);
   }
 });
 

@@ -1,5 +1,5 @@
 
-const stripeService = require('../../src/services/stripeService');
+jest.unmock('../../src/services/stripeService');
 
 // Mock Stripe
 jest.mock('stripe', () => {
@@ -18,9 +18,18 @@ jest.mock('stripe', () => {
     invoices: {
       create: jest.fn(),
       retrieve: jest.fn()
+    },
+    paymentIntents: {
+      create: jest.fn()
     }
   }));
 });
+
+const stripeService = require('../../src/services/stripeService');
+const stripeClient = require('stripe')();
+console.log('stripeService type', typeof stripeService);
+console.log('stripeService keys', Object.keys(stripeService));
+stripeService.setStripeClient(stripeClient);
 
 describe('Stripe Service', () => {
   describe('Customer Management', () => {
@@ -32,14 +41,14 @@ describe('Stripe Service', () => {
 
       // Mock the stripe customer creation
       const mockCustomer = { id: 'cus_test123', ...customerData };
-      require('stripe')().customers.create.mockResolvedValue(mockCustomer);
+      stripeClient.customers.create.mockResolvedValue(mockCustomer);
 
       const result = await stripeService.createCustomer(customerData);
       expect(result.id).toBe('cus_test123');
     });
 
     test('should handle customer creation error', async () => {
-      require('stripe')().customers.create.mockRejectedValue(new Error('Stripe error'));
+      stripeClient.customers.create.mockRejectedValue(new Error('Stripe error'));
 
       await expect(stripeService.createCustomer({}))
         .rejects.toThrow('Stripe error');
@@ -54,7 +63,7 @@ describe('Stripe Service', () => {
       };
 
       const mockSubscription = { id: 'sub_test123', ...subscriptionData };
-      require('stripe')().subscriptions.create.mockResolvedValue(mockSubscription);
+      stripeClient.subscriptions.create.mockResolvedValue(mockSubscription);
 
       const result = await stripeService.createSubscription(subscriptionData);
       expect(result.id).toBe('sub_test123');

@@ -1,19 +1,92 @@
+# ========================================
 # Node
-node_modules
+# ========================================
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-dist
-build
 
-# Logs
+# Builds
+dist/
+build/
+out/
+
+# ========================================
+# Environment Files
+# ========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ========================================
+# Logs & Temp Files
+# ========================================
 *.log
-logs
+logs/
 *.tmp
+*.pid
+*.seed
+*.log.gz
 
-# OS
+# Jest / Vitest
+coverage/
+.vitest/
+jest-cache/
+jest-results.json
+
+# ========================================
+# Database
+# ========================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+database/*.db-journal
+
+# ========================================
+# Cache
+# ========================================
+.cache/
+.tmp/
+temp/
+tmp/
+
+# ========================================
+# Operating System
+# ========================================
 .DS_Store
+Thumbs.db
 
-# VS Code
+# ========================================
+# Editor Files
+# ========================================
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================================
+# Frontend builds
+# ========================================
+client/dist/
+client/node_modules/
+
+# ========================================
+# Local uploads (never commit)
+# ========================================
+uploads/
+client/uploads/
+
+# ========================================
+# Misc
+# ========================================
+*.tgz
+*.tar
+*.zip

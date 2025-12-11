@@ -1,30 +1,30 @@
-const logger = require('../lib/logger/winston');
+const logger = require('../lib/logger');
 
-const errorHandler = (err, req, res, next) => {
-  logger.error({
+const formatErrorDetails = (errorList = []) => errorList.map((el) => el.message);
+
+const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+  logger.error('Unhandled error', {
     error: err.message,
     stack: err.stack,
-    url: req.url,
+    url: req.originalUrl,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('user-agent')
+    userAgent: req.get('User-Agent')
   });
 
   if (err.name === 'ValidationError') {
-    const errors = Object.values(err.errors).map(e => e.message);
     return res.status(400).json({
       success: false,
       error: 'Validation Error',
-      details: errors
+      details: formatErrorDetails(Object.values(err.errors))
     });
   }
 
   if (err.name === 'SequelizeValidationError') {
-    const errors = err.errors.map(e => e.message);
     return res.status(400).json({
       success: false,
       error: 'Database Validation Error',
-      details: errors
+      details: formatErrorDetails(err.errors)
     });
   }
 
@@ -35,10 +35,10 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  res.status(err.statusCode || 500).json({
+  return res.status(err.statusCode || 500).json({
     success: false,
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Server Error' 
+    error: process.env.NODE_ENV === 'production'
+      ? 'Server Error'
       : err.message
   });
 };

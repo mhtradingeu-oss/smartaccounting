@@ -1,47 +1,48 @@
-const { Sequelize } = require('sequelize');
+const path = require('path');
 require('dotenv').config();
 
-// Create basic console logger if none exists
-const logger = {
-  info: (msg, meta = '') => console.log(`[INFO] ${msg}`, meta),
-  error: (msg, meta = '') => console.error(`[ERROR] ${msg}`, meta),
-  warn: (msg, meta = '') => console.warn(`[WARN] ${msg}`, meta)
-};
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isTest = NODE_ENV === 'test';
+const explicitUrl = process.env.DATABASE_URL;
+const fallbackPostgresUrl = 'postgres://localhost:5432/smartaccounting';
 
-// Validate required environment variables
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is required');
+const databaseUrl = explicitUrl || (isTest ? 'sqlite::memory:' : fallbackPostgresUrl);
+const isSqlite = databaseUrl.startsWith('sqlite:');
+const isInMemorySqlite = databaseUrl === 'sqlite::memory:';
+
+let storage;
+if (isSqlite && !isInMemorySqlite) {
+  storage = path.resolve(process.cwd(), databaseUrl.replace('sqlite:', ''));
 }
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'sqlite',
-  storage: './database/smartaccounting.db',
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+const pool = {
+  max: Number(process.env.DB_POOL_MAX) || 10,
+  min: Number(process.env.DB_POOL_MIN) || 0,
+  acquire: Number(process.env.DB_POOL_ACQUIRE) || 30000,
+  idle: Number(process.env.DB_POOL_IDLE) || 10000
+};
+
+const logging = process.env.SEQUELIZE_LOGGING === 'true' || NODE_ENV === 'development';
+
+const dialectOptions = {};
+if (!isSqlite && process.env.DB_SSL === 'true') {
+  dialectOptions.ssl = {
+    require: true,
+    rejectUnauthorized: false
+  };
+}
+
+module.exports = {
+  NODE_ENV,
+  databaseUrl,
+  isTest,
+  isSqlite,
+  storage,
+  pool,
+  logging,
+  dialectOptions,
   define: {
     timestamps: true,
-    underscored: true,
-    paranoid: true 
-  },
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  },
-  retry: {
-    match: [
-      /SQLITE_BUSY/
-    ],
-    max: 3
+    underscored: false
   }
-});
-
-sequelize.authenticate()
-  .then(() => {
-    logger.info('✅ Database connection established successfully.');
-  })
-  .catch(err => {
-    logger.error('❌ Unable to connect to the database:', err);
-  });
-
-module.exports = { sequelize, Sequelize };
+};

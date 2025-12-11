@@ -1,5 +1,4 @@
 const { Invoice, User, Transaction, TaxReport, BankTransaction, Company } = require('../models');
-const { sequelize } = require('../config/database');
 const logger = require('../lib/logger');
 
 // Import Op for Sequelize operations

@@ -1,9 +1,8 @@
-
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../models');
 const cache = require('../lib/cache');
-const { logger } = require('../lib/logger');
+const logger = require('../lib/logger');
 const os = require('os');
 const fs = require('fs').promises;
 

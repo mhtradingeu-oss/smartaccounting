@@ -1,42 +1,44 @@
 const cors = require('cors');
 
+const envOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CORS_ORIGIN
+];
+
+const allowedOrigins = new Set([
+  ...envOrigins.filter(Boolean),
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://localhost:3000',
+  'https://localhost:5173'
+]);
+
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'https://localhost:3000',
-      'https://localhost:5173'
-    ];
-
-    // Add Replit domains - be more permissive for development
-    if (origin.includes('replit.dev') || 
-        origin.includes('replit.app') || 
-        origin.includes('replit.co') ||
-        origin.includes('spock.replit.dev')) {
+  origin(origin, callback) {
+    if (!origin) {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    const requestOrigin = origin.toLowerCase();
+    const matchesAllowed = Array.from(allowedOrigins)
+      .some((allowed) => requestOrigin === allowed.toLowerCase());
+
+    if (matchesAllowed) {
       return callback(null, true);
-    } else {
-      console.log('🚨 CORS blocked origin:', origin);
-      return callback(null, true); // Allow all origins in development
     }
+
+    console.warn('Blocked CORS origin:', origin);
+    return callback(null, false);
   },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
+    'Content-Type',
+    'Authorization',
     'x-requested-with',
     'Accept',
     'Origin',
-    'X-Requested-With',
     'Upgrade',
     'Connection',
     'Sec-WebSocket-Key',
@@ -45,4 +47,4 @@ const corsOptions = {
   ]
 };
 
-module.exports = cors(corsOptions);s);
+module.exports = cors(corsOptions);

@@ -1,27 +1,14 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-const { sequelize } = require('./src/config/database');
-// Import logger with fallback
-let logger;
-try {
-  logger = require('./src/lib/logger');
-} catch (error) {
-  // Fallback logger if winston logger fails
-  logger = {
-    info: (msg, meta = '') => console.log(`[INFO] ${msg}`, meta),
-    error: (msg, meta = '') => console.error(`[ERROR] ${msg}`, meta),
-    warn: (msg, meta = '') => console.warn(`[WARN] ${msg}`, meta),
-    debug: (msg, meta = '') => console.log(`[DEBUG] ${msg}`, meta)
-  };
-}
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const corsMiddleware = require('./src/middleware/cors');
+const { applySecurityMiddleware } = require('./src/middleware/security');
 const errorHandler = require('./src/middleware/errorHandler');
+const logger = require('./src/lib/logger');
+const { specs, swaggerOptions } = require('./src/config/swagger');
+const { sequelize, syncDatabase } = require('./src/models');
 
-// Import routes
 const authRoutes = require('./src/routes/auth');
 const dashboardRoutes = require('./src/routes/dashboard');
 const invoiceRoutes = require('./src/routes/invoices');
@@ -38,141 +25,100 @@ const elsterRoutes = require('./src/routes/elster');
 const ocrRoutes = require('./src/routes/ocr');
 const logRoutes = require('./src/routes/logs');
 const emailTestRoutes = require('./src/routes/emailTest');
+const germanTaxComplianceRoutes = require('./src/routes/germanTaxCompliance');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
+const apiPrefix = process.env.API_BASE_URL || '/api';
 
-// Trust proxy for Replit
-app.set('trust proxy', true);
+if (process.env.TRUST_PROXY === 'true' || process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
-// Security middleware
-app.use(helmet({
-  crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-}));
-
-// CORS configuration
-const corsMiddleware = require('./src/middleware/cors');
+applySecurityMiddleware(app);
 app.use(corsMiddleware);
+app.use(express.json({ limit: process.env.JSON_LIMIT || '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || '10mb' }));
+app.use(logger.requestLogger);
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api/', limiter);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(compression());
-
-// Request logging
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url} - ${req.ip}`);
-  next();
-});
-
-// Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+  res.status(200).json({
+    status: 'ok',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
   });
 });
 
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
+app.get(`${apiPrefix}/health`, (req, res) => {
+  res.status(200).json({
     status: 'healthy',
-    timestamp: new Date().toISOString(),
     service: 'SmartAccounting Backend',
+    timestamp: new Date().toISOString(),
     port: PORT
   });
 });
 
-// Routes
-app.use('/api/auth', require('./src/routes/auth'));
-app.use('/api/dashboard', require('./src/routes/dashboard'));
-app.use('/api/invoices', require('./src/routes/invoices'));
-app.use('/api/bank-statements', require('./src/routes/bankStatements'));
-app.use('/api/german-tax', require('./src/routes/germanTax'));
-app.use('/api/stripe', require('./src/routes/stripe'));
-app.use('/api/users', require('./src/routes/users'));
-app.use('/api/companies', require('./src/routes/companies'));
-app.use('/api/tax-reports', require('./src/routes/taxReports'));
-app.use('/api/compliance', require('./src/routes/compliance'));
-app.use('/api/german-tax-compliance', require('./src/routes/germanTaxCompliance'));
-app.use('/api/elster', require('./src/routes/elster'));
-app.use('/api/ocr', require('./src/routes/ocr'));
-app.use('/api/system', require('./src/routes/system'));
-app.use('/api/monitoring', require('./src/routes/monitoring'));
-app.use('/api/logs', require('./src/routes/logs'));
-app.use('/api/email-test', require('./src/routes/emailTest'));
+app.use(`${apiPrefix}/auth`, authRoutes);
+app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
+app.use(`${apiPrefix}/invoices`, invoiceRoutes);
+app.use(`${apiPrefix}/bank-statements`, bankStatementRoutes);
+app.use(`${apiPrefix}/german-tax`, germanTaxRoutes);
+app.use(`${apiPrefix}/stripe`, stripeRoutes);
+app.use(`${apiPrefix}/users`, userRoutes);
+app.use(`${apiPrefix}/companies`, companyRoutes);
+app.use(`${apiPrefix}/tax-reports`, taxReportRoutes);
+app.use(`${apiPrefix}/compliance`, complianceRoutes);
+app.use(`${apiPrefix}/german-tax-compliance`, germanTaxComplianceRoutes);
+app.use(`${apiPrefix}/elster`, elsterRoutes);
+app.use(`${apiPrefix}/ocr`, ocrRoutes);
+app.use(`${apiPrefix}/system`, systemRoutes);
+app.use(`${apiPrefix}/monitoring`, monitoringRoutes);
+app.use(`${apiPrefix}/logs`, logRoutes);
+app.use(`${apiPrefix}/email-test`, emailTestRoutes);
 
-// 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    success: false, 
+  res.status(404).json({
+    success: false,
     error: 'Route not found',
     path: req.originalUrl
   });
 });
 
-// Global error handler
 app.use(errorHandler);
 
-// Database connection and server startup
 async function startServer() {
   try {
-    // Initialize models first
-    require('./src/models');
-    logger.info('✅ Database models loaded');
-
-    // Test database connection
-    await sequelize.authenticate();
-    logger.info('✅ Database connection established successfully');
-
-    // Sync database models
-    await sequelize.sync({ alter: false });
-    logger.info('✅ Database models synchronized');
-
-    // Start server
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      logger.info(`🚀 SmartAccounting backend server running on port ${PORT}`);
-      logger.info(`📍 Environment: ${process.env.NODE_ENV}`);
-      logger.info(`🔗 API Documentation: http://localhost:${PORT}/api-docs`);
-      logger.info(`🌐 Server accessible at: http://0.0.0.0:${PORT}`);
+    await syncDatabase({ alter: false });
+    const server = app.listen(PORT, HOST, () => {
+      logger.info('Server running', {
+        host: HOST,
+        port: PORT,
+        apiPrefix,
+        environment: process.env.NODE_ENV || 'development'
+      });
+      logger.info(`Swagger docs available at http://localhost:${PORT}/api/docs`);
     });
 
+    return server;
   } catch (error) {
-    logger.error('❌ Failed to start server:', error);
+    logger.error('Failed to start server', { error: error.message });
     process.exit(1);
   }
 }
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  logger.error('Uncaught Exception:', error);
+  logger.error('Uncaught Exception', { error: error.stack || error.message });
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled Rejection', { reason });
   process.exit(1);
 });
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, shutting down gracefully');
   await sequelize.close();

@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { FileAttachment } = require('../models');
+const { Op } = require('sequelize');
 const gobdService = require('./gobdComplianceService');
 const logger = require('../lib/logger');
 
@@ -373,6 +374,7 @@ class OCRService {
       const { documentType, dateFrom, dateTo, vendor, minAmount, maxAmount } = criteria;
       
       const whereClause = {};
+      if (criteria.companyId) whereClause.companyId = criteria.companyId;
       if (documentType) whereClause.documentType = documentType;
       if (dateFrom || dateTo) {
         whereClause.createdAt = {};

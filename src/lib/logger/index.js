@@ -1,82 +1,34 @@
-const winston = require('winston');
-const path = require('path');
+const logger = require('./winston');
 
-const fs = require('fs');
-const logsDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
+const requestLogger = (req, res, next) => {
+  const start = process.hrtime();
 
-const productionFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss'
-  }),
-  winston.format.errors({ stack: true }),
-  winston.format.json(),
-  winston.format.prettyPrint()
-);
+  res.on('finish', () => {
+    const [seconds, nanoseconds] = process.hrtime(start);
+    const durationMs = (seconds * 1000) + (nanoseconds / 1e6);
+    logger.info('HTTP request', {
+      method: req.method,
+      path: req.originalUrl,
+      statusCode: res.statusCode,
+      durationMs: `${durationMs.toFixed(2)}ms`,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+  });
 
-const developmentFormat = winston.format.combine(
-  winston.format.colorize(),
-  winston.format.timestamp({
-    format: 'HH:mm:ss'
-  }),
-  winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-    const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-    return `${timestamp} [${service || 'APP'}] ${level}: ${message} ${metaStr}`;
-  })
-);
-
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  defaultMeta: { service: 'smartaccounting' },
-  transports: []
-});
-
-if (process.env.NODE_ENV === 'production') {
-  logger.format = productionFormat;
-
-  logger.add(new winston.transports.File({
-    filename: path.join(logsDir, 'error.log'),
-    level: 'error',
-    maxsize: 10 * 1024 * 1024, 
-    maxFiles: 5
-  }));
-
-  logger.add(new winston.transports.File({
-    filename: path.join(logsDir, 'combined.log'),
-    maxsize: 10 * 1024 * 1024, 
-    maxFiles: 10
-  }));
-
-  logger.add(new winston.transports.Console({
-    level: 'error',
-    format: winston.format.simple()
-  }));
-} else {
-  
-  logger.format = developmentFormat;
-
-  logger.add(new winston.transports.Console({
-    level: 'debug'
-  }));
-
-  logger.add(new winston.transports.File({
-    filename: path.join(logsDir, 'development.log'),
-    level: 'debug'
-  }));
-}
-
-logger.audit = (message, meta = {}) => {
-  logger.info(message, { ...meta, type: 'AUDIT' });
+  next();
 };
 
-logger.security = (message, meta = {}) => {
-  logger.warn(message, { ...meta, type: 'SECURITY' });
+const stream = {
+  write: (message) => {
+    if (typeof message === 'string') {
+      logger.info(message.trim());
+    }
+  }
 };
 
-logger.performance = (message, meta = {}) => {
-  logger.info(message, { ...meta, type: 'PERFORMANCE' });
-};
+const createChildLogger = (meta = {}) => logger.child(meta);
+
+Object.assign(logger, { requestLogger, stream, createChildLogger });
 
 module.exports = logger;

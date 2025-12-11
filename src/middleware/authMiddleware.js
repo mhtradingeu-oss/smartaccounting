@@ -1,80 +1,66 @@
-
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const logger = require('../lib/logger');
+const { User, Company } = require('../models');
+const requireCompany = require('./requireCompany');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-key';
 
 const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7)
+    : authHeader;
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication credentials are missing'
+    });
+  }
+
   try {
-    let token;
-    const authHeader = req.headers.authorization;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findByPk(decoded.userId, {
+      include: [{ model: Company, as: 'company' }]
+    });
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7);
-    }
-
-    if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Access token required' 
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid authentication token'
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const currentUser = await User.findByPk(decoded.id);
+    req.user = user;
+    req.userId = user.id;
+    req.companyId = user.companyId;
+    req.token = token;
 
-    if (!currentUser) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid token - user not found' 
-      });
-    }
-
-    if (!currentUser.isActive) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Account is deactivated' 
-      });
-    }
-
-    req.user = currentUser;
-    req.userId = currentUser.id;
-    req.userRole = currentUser.role;
-    req.companyId = currentUser.companyId;
-    
     next();
   } catch (error) {
-    logger.error('Authentication error:', error);
-    return res.status(403).json({
+    return res.status(401).json({
       success: false,
-      error: 'Invalid or expired token'
+      message: 'Invalid or expired token'
     });
   }
 };
 
-const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: 'Authentication required'
-      });
-    }
+const requireRole = (allowedRoles = []) => (req, res, next) => {
+  if (!allowedRoles.length) {
+    return next();
+  }
 
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        error: `Access denied. Required roles: ${roles.join(', ')}`
-      });
-    }
+  if (!req.user || !allowedRoles.includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Insufficient permissions'
+    });
+  }
 
-    next();
-  };
+  next();
 };
-
-const requireAdmin = authorize('admin', 'superadmin');
 
 module.exports = {
   authenticate,
-  authorize,
-  requireAdmin
+  requireRole,
+  requireCompany
 };
