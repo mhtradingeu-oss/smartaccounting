@@ -53,6 +53,6 @@ export const useApi = () => {
     post,
     put,
     delete: del,
-    clearError: () => setError(null)
+    clearError: () => setError(null),
   };
 };

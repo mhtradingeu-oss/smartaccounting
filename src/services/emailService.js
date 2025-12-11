@@ -27,11 +27,11 @@ class EmailService {
         secure: process.env.EMAIL_PORT === '465',
         auth: {
           user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
+          pass: process.env.EMAIL_PASS,
         },
         tls: {
-          rejectUnauthorized: false
-        }
+          rejectUnauthorized: false,
+        },
       });
 
       // Verify connection
@@ -234,7 +234,7 @@ class EmailService {
         </div>
     </div>
 </body>
-</html>`
+</html>`,
     };
 
     // Create template files
@@ -279,7 +279,7 @@ class EmailService {
         to,
         subject,
         html: html || text,
-        text: text || html?.replace(/<[^>]*>/g, '') // Strip HTML for text version
+        text: text || html?.replace(/<[^>]*>/g, ''), // Strip HTML for text version
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -290,7 +290,7 @@ class EmailService {
         subject,
         template,
         status: 'sent',
-        messageId: result.messageId
+        messageId: result.messageId,
       });
 
       logger.info(`✅ Email sent to ${to}: ${subject}`);
@@ -305,7 +305,7 @@ class EmailService {
         subject: options.subject,
         template: options.template,
         status: 'failed',
-        error: error.message
+        error: error.message,
       });
 
       throw error;
@@ -318,7 +318,7 @@ class EmailService {
         action: 'email_sent',
         details: emailData,
         userId: emailData.userId || null,
-        companyId: emailData.companyId || null
+        companyId: emailData.companyId || null,
       });
     } catch (error) {
       console.error('Failed to log email:', error);
@@ -335,8 +335,8 @@ class EmailService {
         name: user.firstName || user.email,
         company: company?.name || 'Your Company',
         role: user.role,
-        loginUrl: `${process.env.FRONTEND_URL}/login`
-      }
+        loginUrl: `${process.env.FRONTEND_URL}/login`,
+      },
     });
   }
 
@@ -349,8 +349,8 @@ class EmailService {
         name: user.firstName || user.email,
         resetUrl: `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`,
         timestamp: new Date().toISOString(),
-        ipAddress
-      }
+        ipAddress,
+      },
     });
   }
 
@@ -365,8 +365,8 @@ class EmailService {
         clientName: invoice.clientName,
         amount: invoice.totalAmount.toFixed(2),
         dueDate: invoice.dueDate,
-        status: invoice.status
-      }
+        status: invoice.status,
+      },
     });
   }
 
@@ -381,8 +381,8 @@ class EmailService {
         reportType: report.type,
         status: report.status,
         generatedDate: report.createdAt,
-        reportUrl: `${process.env.FRONTEND_URL}/tax-reports/${report.id}`
-      }
+        reportUrl: `${process.env.FRONTEND_URL}/tax-reports/${report.id}`,
+      },
     });
   }
 
@@ -403,13 +403,13 @@ class EmailService {
           <h2>Email Configuration Test</h2>
           <p>✅ Email service is working correctly!</p>
           <p>Test sent at: ${new Date().toISOString()}</p>
-        `
+        `,
       });
 
       return {
         success: true,
         message: 'Email configuration is working',
-        testResult
+        testResult,
       };
 
     } catch (error) {

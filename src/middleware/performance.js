@@ -13,7 +13,7 @@ class PerformanceMonitor {
       requests: 0,
       errors: 0,
       totalResponseTime: 0,
-      slowRequests: 0
+      slowRequests: 0,
     };
   }
 
@@ -29,17 +29,17 @@ class PerformanceMonitor {
   }
 
   getAverageResponseTime() {
-    if (!this.metrics.requests) return 0;
+    if (!this.metrics.requests) {return 0;}
     return Number((this.metrics.totalResponseTime / this.metrics.requests).toFixed(2));
   }
 
   getErrorRate() {
-    if (!this.metrics.requests) return 0;
+    if (!this.metrics.requests) {return 0;}
     return Number(((this.metrics.errors / this.metrics.requests) * 100).toFixed(2));
   }
 
   getSlowRequestRate() {
-    if (!this.metrics.requests) return 0;
+    if (!this.metrics.requests) {return 0;}
     return Number(((this.metrics.slowRequests / this.metrics.requests) * 100).toFixed(2));
   }
 
@@ -52,7 +52,7 @@ class PerformanceMonitor {
       memory: process.memoryUsage(),
       cpu: process.cpuUsage(),
       uptime: process.uptime(),
-      load: os.loadavg()
+      load: os.loadavg(),
     };
   }
 }
@@ -64,26 +64,26 @@ const performanceMiddleware = (app) => {
     compression({
       threshold: 1024,
       filter: (req, res) => {
-        if (req.headers['x-no-compression']) return false;
+        if (req.headers['x-no-compression']) {return false;}
         return compression.filter(req, res);
-      }
-    })
+      },
+    }),
   );
 
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
-          fontSrc: ["'self'", 'https:'],
-          imgSrc: ["'self'", 'data:', 'https:'],
-          connectSrc: ["'self'", 'https:']
-        }
+          defaultSrc: ['\'self\''],
+          scriptSrc: ['\'self\'', '\'unsafe-inline\''],
+          styleSrc: ['\'self\'', '\'unsafe-inline\'', 'https:'],
+          fontSrc: ['\'self\'', 'https:'],
+          imgSrc: ['\'self\'', 'data:', 'https:'],
+          connectSrc: ['\'self\'', 'https:'],
+        },
       },
-      crossOriginEmbedderPolicy: false
-    })
+      crossOriginEmbedderPolicy: false,
+    }),
   );
 
   app.use(
@@ -100,10 +100,10 @@ const performanceMiddleware = (app) => {
           path: req.path,
           durationMs,
           userAgent: req.get('User-Agent'),
-          ip: req.ip
+          ip: req.ip,
         });
       }
-    })
+    }),
   );
 
   const morganFormat =
@@ -114,8 +114,8 @@ const performanceMiddleware = (app) => {
   app.use(
     morgan(morganFormat, {
       stream: logger.stream,
-      skip: (req) => req.path.startsWith('/static/')
-    })
+      skip: (req) => req.path.startsWith('/static/'),
+    }),
   );
 
   app.use((req, res, next) => {
@@ -145,7 +145,7 @@ const performanceMiddleware = (app) => {
       success: true,
       timestamp: new Date().toISOString(),
       performance: performanceMonitor.getMetrics(),
-      cache: cache.getStats()
+      cache: cache.getStats(),
     });
   });
 };
@@ -163,7 +163,7 @@ const setupCluster = () => {
       logger.error('Worker exited unexpectedly', {
         worker: worker.process.pid,
         code,
-        signal
+        signal,
       });
       cluster.fork();
     });
@@ -177,5 +177,5 @@ const setupCluster = () => {
 module.exports = {
   performanceMiddleware,
   performanceMonitor,
-  setupCluster
+  setupCluster,
 };

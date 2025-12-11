@@ -7,21 +7,21 @@ jest.mock('stripe', () => {
     customers: {
       create: jest.fn(),
       retrieve: jest.fn(),
-      update: jest.fn()
+      update: jest.fn(),
     },
     subscriptions: {
       create: jest.fn(),
       retrieve: jest.fn(),
       update: jest.fn(),
-      cancel: jest.fn()
+      cancel: jest.fn(),
     },
     invoices: {
       create: jest.fn(),
-      retrieve: jest.fn()
+      retrieve: jest.fn(),
     },
     paymentIntents: {
-      create: jest.fn()
-    }
+      create: jest.fn(),
+    },
   }));
 });
 
@@ -36,7 +36,7 @@ describe('Stripe Service', () => {
     test('should create customer', async () => {
       const customerData = {
         email: 'customer@example.com',
-        name: 'Test Customer'
+        name: 'Test Customer',
       };
 
       // Mock the stripe customer creation
@@ -59,7 +59,7 @@ describe('Stripe Service', () => {
     test('should create subscription', async () => {
       const subscriptionData = {
         customer: 'cus_test123',
-        items: [{ price: 'price_test123' }]
+        items: [{ price: 'price_test123' }],
       };
 
       const mockSubscription = { id: 'sub_test123', ...subscriptionData };

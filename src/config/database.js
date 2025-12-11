@@ -19,7 +19,7 @@ const pool = {
   max: Number(process.env.DB_POOL_MAX) || 10,
   min: Number(process.env.DB_POOL_MIN) || 0,
   acquire: Number(process.env.DB_POOL_ACQUIRE) || 30000,
-  idle: Number(process.env.DB_POOL_IDLE) || 10000
+  idle: Number(process.env.DB_POOL_IDLE) || 10000,
 };
 
 const logging = process.env.SEQUELIZE_LOGGING === 'true' || NODE_ENV === 'development';
@@ -28,7 +28,7 @@ const dialectOptions = {};
 if (!isSqlite && process.env.DB_SSL === 'true') {
   dialectOptions.ssl = {
     require: true,
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
   };
 }
 
@@ -43,6 +43,6 @@ module.exports = {
   dialectOptions,
   define: {
     timestamps: true,
-    underscored: false
-  }
+    underscored: false,
+  },
 };

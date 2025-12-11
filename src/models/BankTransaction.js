@@ -6,50 +6,50 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     date: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
     },
     description: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
+      allowNull: false,
     },
     currency: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'EUR'
+      defaultValue: 'EUR',
     },
     type: {
       type: DataTypes.ENUM('debit', 'credit'),
-      allowNull: false
+      allowNull: false,
     },
     reference: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     category: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     isReconciled: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false
+      defaultValue: false,
     },
     bankStatementId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'bank_statements',
-        key: 'id'
-      }
-    }
+        key: 'id',
+      },
+    },
   }, {
     tableName: 'bank_transactions',
-    timestamps: true
+    timestamps: true,
   });
 
   BankTransaction.associate = (models) => {

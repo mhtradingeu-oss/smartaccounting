@@ -18,7 +18,7 @@ class DashboardService {
         totalRevenue,
         monthlyRevenue,
         totalUsers,
-        activeUsers
+        activeUsers,
       ] = await Promise.all([
         Invoice.count({ where: { companyId } }),
         Invoice.count({ where: { companyId, status: 'paid' } }),
@@ -27,30 +27,30 @@ class DashboardService {
           where: { 
             companyId, 
             status: 'pending',
-            dueDate: { [Op.lt]: new Date() }
-          } 
+            dueDate: { [Op.lt]: new Date() },
+          }, 
         }),
         Invoice.sum('totalAmount', { 
-          where: { companyId, status: 'paid' } 
+          where: { companyId, status: 'paid' }, 
         }) || 0,
         Invoice.sum('totalAmount', { 
           where: { 
             companyId, 
             status: 'paid',
             createdAt: {
-              [Op.gte]: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-            }
-          } 
+              [Op.gte]: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+            },
+          }, 
         }) || 0,
         User.count({ where: { companyId } }),
         User.count({ 
           where: { 
             companyId,
             lastLoginAt: {
-              [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-            }
-          } 
-        })
+              [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            },
+          }, 
+        }),
       ]);
 
       return {
@@ -59,7 +59,7 @@ class DashboardService {
         netProfit: parseFloat(totalRevenue || 0),
         profitMargin: totalRevenue > 0 ? 25.0 : 0,
         invoiceCount: totalInvoices,
-        pendingInvoices: pendingInvoices,
+        pendingInvoices,
         overdue: overdueInvoices,
         bankTransactions: 0, // Add default for now
         taxLiability: 0, // Add default for now
@@ -71,18 +71,18 @@ class DashboardService {
           paid: paidInvoices,
           pending: pendingInvoices,
           overdue: overdueInvoices,
-          paidPercentage: totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0
+          paidPercentage: totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0,
         },
         revenue: {
           total: parseFloat(totalRevenue || 0),
           monthly: parseFloat(monthlyRevenue || 0),
-          currency: 'EUR'
+          currency: 'EUR',
         },
         users: {
           total: totalUsers,
           active: activeUsers,
-          activePercentage: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0
-        }
+          activePercentage: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
+        },
       };
     } catch (error) {
       logger.error('Dashboard stats error:', error);
@@ -108,25 +108,25 @@ class DashboardService {
               companyId,
               status: 'paid',
               createdAt: {
-                [Op.between]: [startDate, endDate]
-              }
-            }
+                [Op.between]: [startDate, endDate],
+              },
+            },
           }) || 0,
           Invoice.count({
             where: {
               companyId,
               createdAt: {
-                [Op.between]: [startDate, endDate]
-              }
-            }
-          })
+                [Op.between]: [startDate, endDate],
+              },
+            },
+          }),
         ]);
 
         monthlyData.push({
           month: startDate.toLocaleString('en-US', { month: 'short' }),
           revenue: parseFloat(revenue || 0),
           invoices: invoiceCount,
-          date: startDate.toISOString()
+          date: startDate.toISOString(),
         });
       }
 
@@ -149,40 +149,40 @@ class DashboardService {
         vatCollected,
         vatPaid,
         quarterlyReports,
-        annualReports
+        annualReports,
       ] = await Promise.all([
         Transaction.sum('vatAmount', {
           where: {
             companyId,
             type: 'income',
             date: {
-              [Op.gte]: new Date(currentYear, 0, 1)
-            }
-          }
+              [Op.gte]: new Date(currentYear, 0, 1),
+            },
+          },
         }) || 0,
         Transaction.sum('vatAmount', {
           where: {
             companyId,
             type: 'expense',
             date: {
-              [Op.gte]: new Date(currentYear, 0, 1)
-            }
-          }
+              [Op.gte]: new Date(currentYear, 0, 1),
+            },
+          },
         }) || 0,
         TaxReport.count({
           where: {
             companyId,
             reportType: 'quarterly',
-            year: currentYear
-          }
+            year: currentYear,
+          },
         }),
         TaxReport.count({
           where: {
             companyId,
             reportType: 'annual',
-            year: currentYear
-          }
-        })
+            year: currentYear,
+          },
+        }),
       ]);
 
       return {
@@ -190,24 +190,24 @@ class DashboardService {
           collected: parseFloat(vatCollected || 0),
           paid: parseFloat(vatPaid || 0),
           net: parseFloat((vatCollected || 0) - (vatPaid || 0)),
-          currency: 'EUR'
+          currency: 'EUR',
         },
         reports: {
           quarterly: {
             completed: quarterlyReports,
             total: 4,
-            current: currentQuarter
+            current: currentQuarter,
           },
           annual: {
             completed: annualReports,
             total: 1,
-            current: 1
-          }
+            current: 1,
+          },
         },
         compliance: {
           status: quarterlyReports >= currentQuarter ? 'compliant' : 'pending',
-          nextDueDate: this.getNextTaxDueDate()
-        }
+          nextDueDate: this.getNextTaxDueDate(),
+        },
       };
     } catch (error) {
       logger.error('Tax summary error:', error);
@@ -226,27 +226,27 @@ class DashboardService {
         totalUploads,
         recentUploads,
         processedUploads,
-        failedUploads
+        failedUploads,
       ] = await Promise.all([
         Invoice.count({ where: { companyId } }),
         Invoice.count({ 
           where: { 
             companyId,
-            createdAt: { [Op.gte]: thirtyDaysAgo }
-          }
+            createdAt: { [Op.gte]: thirtyDaysAgo },
+          },
         }),
         Invoice.count({ 
           where: { 
             companyId,
-            status: { [Op.in]: ['paid', 'pending'] }
-          }
+            status: { [Op.in]: ['paid', 'pending'] },
+          },
         }),
         Invoice.count({ 
           where: { 
             companyId,
-            status: 'failed'
-          }
-        })
+            status: 'failed',
+          },
+        }),
       ]);
 
       return {
@@ -255,7 +255,7 @@ class DashboardService {
         processed: processedUploads,
         failed: failedUploads,
         successRate: totalUploads > 0 ? Math.round((processedUploads / totalUploads) * 100) : 0,
-        period: '30 days'
+        period: '30 days',
       };
     } catch (error) {
       logger.error('Upload stats error:', error);
@@ -271,8 +271,8 @@ class DashboardService {
       const recentInvoices = await Invoice.findAll({
         where: { companyId },
         order: [['updatedAt', 'DESC']],
-        limit: limit,
-        attributes: ['id', 'number', 'status', 'totalAmount', 'updatedAt', 'clientName']
+        limit,
+        attributes: ['id', 'number', 'status', 'totalAmount', 'updatedAt', 'clientName'],
       });
 
       const activities = recentInvoices.map(invoice => ({
@@ -281,7 +281,7 @@ class DashboardService {
         action: `Invoice ${invoice.number} ${invoice.status}`,
         description: `${invoice.clientName} - €${invoice.totalAmount}`,
         timestamp: invoice.updatedAt,
-        status: invoice.status
+        status: invoice.status,
       }));
 
       return activities;
@@ -305,7 +305,7 @@ class DashboardService {
       1: new Date(year, 3, 10), // Q1 due April 10
       2: new Date(year, 6, 10), // Q2 due July 10
       3: new Date(year, 9, 10), // Q3 due October 10
-      4: new Date(year, 0, 10)  // Q4 due January 10
+      4: new Date(year, 0, 10),  // Q4 due January 10
     };
 
     return dueDates[nextQuarter].toISOString().split('T')[0];

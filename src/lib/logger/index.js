@@ -12,7 +12,7 @@ const requestLogger = (req, res, next) => {
       statusCode: res.statusCode,
       durationMs: `${durationMs.toFixed(2)}ms`,
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get('User-Agent'),
     });
   });
 
@@ -24,7 +24,7 @@ const stream = {
     if (typeof message === 'string') {
       logger.info(message.trim());
     }
-  }
+  },
 };
 
 const createChildLogger = (meta = {}) => logger.child(meta);

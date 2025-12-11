@@ -17,7 +17,7 @@ const ensureStripeConfigured = (req, res, next) => {
 router.get('/health', (req, res) => {
   return sendSuccess(res, 'Stripe health', {
     configured: !!process.env.STRIPE_SECRET_KEY,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -105,7 +105,7 @@ router.post('/create-customer', ensureStripeConfigured, async (req, res) => {
 
     if (company.stripeCustomerId) {
       return sendSuccess(res, 'Customer already exists', {
-        customerId: company.stripeCustomerId
+        customerId: company.stripeCustomerId,
       });
     }
 

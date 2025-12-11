@@ -23,11 +23,11 @@ const getInvoiceStats = async (companyId) => {
       id: latestInvoice.id,
       invoiceNumber: latestInvoice.invoiceNumber,
       status: latestInvoice.status,
-      amount: latestInvoice.amount
-    } : null
+      amount: latestInvoice.amount,
+    } : null,
   };
 };
 
 module.exports = {
-  getInvoiceStats
+  getInvoiceStats,
 };

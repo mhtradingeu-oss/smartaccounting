@@ -18,12 +18,12 @@ router.get('/health', async (req, res) => {
       checks.database = {
         status: 'healthy',
         responseTime: Date.now() - startTime,
-        connection: 'active'
+        connection: 'active',
       };
     } catch (error) {
       checks.database = {
         status: 'unhealthy',
-        error: error.message
+        error: error.message,
       };
     }
 
@@ -32,12 +32,12 @@ router.get('/health', async (req, res) => {
       const cacheTest = await cache.get('health_check');
       checks.cache = {
         status: cacheTest === 'ok' ? 'healthy' : 'unhealthy',
-        type: cache.redisConnected ? 'redis' : 'memory'
+        type: cache.redisConnected ? 'redis' : 'memory',
       };
     } catch (error) {
       checks.cache = {
         status: 'unhealthy',
-        error: error.message
+        error: error.message,
       };
     }
 
@@ -45,12 +45,12 @@ router.get('/health', async (req, res) => {
       const stats = await fs.stat(process.cwd());
       checks.diskSpace = {
         status: 'healthy',
-        available: 'OK' 
+        available: 'OK', 
       };
     } catch (error) {
       checks.diskSpace = {
         status: 'unhealthy',
-        error: error.message
+        error: error.message,
       };
     }
 
@@ -60,12 +60,12 @@ router.get('/health', async (req, res) => {
       usage: {
         rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
         heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`,
-        heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`
-      }
+        heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+      },
     };
 
     const overallStatus = Object.values(checks).every(check => 
-      check.status === 'healthy' || check.status === 'warning'
+      check.status === 'healthy' || check.status === 'warning',
     ) ? 'healthy' : 'unhealthy';
 
     const response = {
@@ -74,7 +74,7 @@ router.get('/health', async (req, res) => {
       version: process.env.npm_package_version || '1.0.0',
       uptime: process.uptime(),
       responseTime: Date.now() - startTime,
-      checks
+      checks,
     };
 
     res.status(overallStatus === 'healthy' ? 200 : 503).json(response);
@@ -83,7 +83,7 @@ router.get('/health', async (req, res) => {
     res.status(503).json({
       status: 'unhealthy',
       error: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -99,14 +99,14 @@ router.get('/metrics', async (req, res) => {
         loadAverage: os.loadavg(),
         cpuCount: os.cpus().length,
         totalMemory: `${Math.round(os.totalmem() / 1024 / 1024)}MB`,
-        freeMemory: `${Math.round(os.freemem() / 1024 / 1024)}MB`
+        freeMemory: `${Math.round(os.freemem() / 1024 / 1024)}MB`,
       },
       process: {
         pid: process.pid,
         memory: process.memoryUsage(),
-        cpu: process.cpuUsage()
+        cpu: process.cpuUsage(),
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     res.json(metrics);
@@ -124,7 +124,7 @@ router.get('/logs', async (req, res) => {
       level,
       limit: parseInt(limit),
       entries: [], 
-      message: 'Log querying not implemented - use external log aggregation service'
+      message: 'Log querying not implemented - use external log aggregation service',
     };
 
     res.json(logs);

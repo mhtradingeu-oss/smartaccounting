@@ -31,12 +31,12 @@ const options = {
       `,
       contact: {
         name: 'SmartAccounting Support',
-        email: 'support@smartaccounting.com'
+        email: 'support@smartaccounting.com',
       },
       license: {
         name: 'Private License',
-        url: 'https://smartaccounting.com/license'
-      }
+        url: 'https://smartaccounting.com/license',
+      },
     },
     servers: [
       {
@@ -46,7 +46,7 @@ const options = {
       {
         url: 'https://api.smartaccounting.com',
         description: 'Production server',
-      }
+      },
     ],
     components: {
       securitySchemes: {
@@ -54,8 +54,8 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT Authorization header using the Bearer scheme'
-        }
+          description: 'JWT Authorization header using the Bearer scheme',
+        },
       },
       schemas: {
         User: {
@@ -64,40 +64,40 @@ const options = {
           properties: {
             id: {
               type: 'integer',
-              description: 'Unique user identifier'
+              description: 'Unique user identifier',
             },
             email: {
               type: 'string',
               format: 'email',
-              description: 'User email address'
+              description: 'User email address',
             },
             firstName: {
               type: 'string',
-              description: 'User first name'
+              description: 'User first name',
             },
             lastName: {
               type: 'string',
-              description: 'User last name'
+              description: 'User last name',
             },
             role: {
               type: 'string',
               enum: ['admin', 'accountant', 'auditor', 'viewer'],
-              description: 'User role for access control'
+              description: 'User role for access control',
             },
             companyId: {
               type: 'integer',
-              description: 'Associated company ID'
+              description: 'Associated company ID',
             },
             isActive: {
               type: 'boolean',
-              description: 'User account status'
+              description: 'User account status',
             },
             lastLogin: {
               type: 'string',
               format: 'date-time',
-              description: 'Last login timestamp'
-            }
-          }
+              description: 'Last login timestamp',
+            },
+          },
         },
         Company: {
           type: 'object',
@@ -105,19 +105,19 @@ const options = {
           properties: {
             id: {
               type: 'integer',
-              description: 'Unique company identifier'
+              description: 'Unique company identifier',
             },
             name: {
               type: 'string',
-              description: 'Company name'
+              description: 'Company name',
             },
             taxNumber: {
               type: 'string',
-              description: 'German tax number'
+              description: 'German tax number',
             },
             vatNumber: {
               type: 'string',
-              description: 'VAT identification number'
+              description: 'VAT identification number',
             },
             address: {
               type: 'object',
@@ -125,14 +125,14 @@ const options = {
                 street: { type: 'string' },
                 city: { type: 'string' },
                 postalCode: { type: 'string' },
-                country: { type: 'string', default: 'Germany' }
-              }
+                country: { type: 'string', default: 'Germany' },
+              },
             },
             settings: {
               type: 'object',
-              description: 'Company-specific settings'
-            }
-          }
+              description: 'Company-specific settings',
+            },
+          },
         },
         Invoice: {
           type: 'object',
@@ -140,50 +140,50 @@ const options = {
           properties: {
             id: {
               type: 'integer',
-              description: 'Unique invoice identifier'
+              description: 'Unique invoice identifier',
             },
             invoiceNumber: {
               type: 'string',
-              description: 'Invoice number'
+              description: 'Invoice number',
             },
             amount: {
               type: 'number',
               format: 'decimal',
-              description: 'Invoice amount'
+              description: 'Invoice amount',
             },
             currency: {
               type: 'string',
               default: 'EUR',
-              description: 'Currency code'
+              description: 'Currency code',
             },
             vatAmount: {
               type: 'number',
               format: 'decimal',
-              description: 'VAT amount'
+              description: 'VAT amount',
             },
             vatRate: {
               type: 'number',
               format: 'decimal',
-              description: 'VAT rate percentage'
+              description: 'VAT rate percentage',
             },
             issueDate: {
               type: 'string',
               format: 'date',
-              description: 'Invoice issue date'
+              description: 'Invoice issue date',
             },
             dueDate: {
               type: 'string',
               format: 'date',
-              description: 'Payment due date'
+              description: 'Payment due date',
             },
             status: {
               type: 'string',
               enum: ['draft', 'sent', 'paid', 'overdue', 'cancelled'],
-              description: 'Invoice status'
+              description: 'Invoice status',
             },
             customer: {
               type: 'object',
-              description: 'Customer information'
+              description: 'Customer information',
             },
             items: {
               type: 'array',
@@ -193,11 +193,11 @@ const options = {
                   description: { type: 'string' },
                   quantity: { type: 'number' },
                   unitPrice: { type: 'number' },
-                  totalPrice: { type: 'number' }
-                }
-              }
-            }
-          }
+                  totalPrice: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         TaxReport: {
           type: 'object',
@@ -205,92 +205,92 @@ const options = {
           properties: {
             id: {
               type: 'integer',
-              description: 'Unique tax report identifier'
+              description: 'Unique tax report identifier',
             },
             reportType: {
               type: 'string',
               enum: ['monthly', 'quarterly', 'annual'],
-              description: 'Type of tax report'
+              description: 'Type of tax report',
             },
             period: {
               type: 'string',
-              description: 'Reporting period (YYYY-MM or YYYY-QQ or YYYY)'
+              description: 'Reporting period (YYYY-MM or YYYY-QQ or YYYY)',
             },
             status: {
               type: 'string',
               enum: ['draft', 'submitted', 'accepted', 'rejected'],
-              description: 'Report status'
+              description: 'Report status',
             },
             submissionDate: {
               type: 'string',
               format: 'date-time',
-              description: 'Date submitted to ELSTER'
+              description: 'Date submitted to ELSTER',
             },
             elsterTransactionId: {
               type: 'string',
-              description: 'ELSTER transaction identifier'
-            }
-          }
+              description: 'ELSTER transaction identifier',
+            },
+          },
         },
         Error: {
           type: 'object',
           properties: {
             error: {
               type: 'string',
-              description: 'Error message'
+              description: 'Error message',
             },
             code: {
               type: 'string',
-              description: 'Error code'
+              description: 'Error code',
             },
             details: {
               type: 'object',
-              description: 'Additional error details'
-            }
-          }
-        }
-      }
+              description: 'Additional error details',
+            },
+          },
+        },
+      },
     },
     security: [
       {
-        bearerAuth: []
-      }
+        bearerAuth: [],
+      },
     ],
     tags: [
       {
         name: 'Authentication',
-        description: 'User authentication and authorization'
+        description: 'User authentication and authorization',
       },
       {
         name: 'Users',
-        description: 'User management operations'
+        description: 'User management operations',
       },
       {
         name: 'Companies',
-        description: 'Company management operations'
+        description: 'Company management operations',
       },
       {
         name: 'Invoices',
-        description: 'Invoice management and processing'
+        description: 'Invoice management and processing',
       },
       {
         name: 'Tax Reports',
-        description: 'German tax report generation and submission'
+        description: 'German tax report generation and submission',
       },
       {
         name: 'Bank Statements',
-        description: 'Bank statement processing and reconciliation'
+        description: 'Bank statement processing and reconciliation',
       },
       {
         name: 'System',
-        description: 'System health and monitoring endpoints'
-      }
-    ]
+        description: 'System health and monitoring endpoints',
+      },
+    ],
   },
   apis: [
     './src/routes/*.js',
-    './src/models/*.js'
-  ]
+    './src/models/*.js',
+  ],
 };
 
 const specs = swaggerJsdoc(options);
@@ -312,12 +312,12 @@ const swaggerOptions = {
     filter: true,
     showExtensions: true,
     showCommonExtensions: true,
-    tryItOutEnabled: true
-  }
+    tryItOutEnabled: true,
+  },
 };
 
 module.exports = {
   swaggerUi,
   specs,
-  swaggerOptions
+  swaggerOptions,
 };

@@ -5,46 +5,46 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     reportType: {
       type: DataTypes.ENUM('monthly', 'quarterly', 'yearly'),
-      allowNull: false
+      allowNull: false,
     },
     period: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     year: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     taxData: {
       type: DataTypes.JSON,
       allowNull: false,
-      defaultValue: {}
+      defaultValue: {},
     },
     status: {
       type: DataTypes.ENUM('draft', 'submitted', 'approved', 'rejected'),
-      defaultValue: 'draft'
+      defaultValue: 'draft',
     },
     submittedAt: {
-      type: DataTypes.DATE
+      type: DataTypes.DATE,
     },
     elsterStatus: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
-        key: 'id'
-      }
-    }
+        key: 'id',
+      },
+    },
   }, {
     tableName: 'tax_reports',
-    timestamps: true
+    timestamps: true,
   });
 
   TaxReport.associate = (models) => {

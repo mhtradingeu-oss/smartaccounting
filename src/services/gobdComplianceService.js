@@ -22,7 +22,7 @@ class GoBDComplianceService {
       hash,
       version: '1.0',
       retention_period: this.calculateRetentionPeriod(documentType),
-      immutable: true
+      immutable: true,
     };
 
     // Store in database with immutable flag
@@ -43,7 +43,7 @@ class GoBDComplianceService {
       'tax_report': 10,
       'bank_statement': 10,
       'receipt': 6, // 6 years for receipts under €150
-      'contract': 10
+      'contract': 10,
     };
     return retentionRules[documentType] || 10;
   }
@@ -53,10 +53,10 @@ class GoBDComplianceService {
     const records = await AuditLog.findAll({
       where: {
         timestamp: {
-          [Op.between]: [startDate, endDate]
-        }
+          [Op.between]: [startDate, endDate],
+        },
       },
-      order: [['timestamp', 'ASC']]
+      order: [['timestamp', 'ASC']],
     });
 
     if (format === 'XML') {
@@ -94,7 +94,7 @@ class GoBDComplianceService {
       firstName: 'ANONYMIZED',
       lastName: 'ANONYMIZED',
       phoneNumber: null,
-      address: 'ANONYMIZED'
+      address: 'ANONYMIZED',
     };
     
     await this.createImmutableRecord('gdpr_anonymization', { userId, anonymizedData }, 'system');
@@ -115,7 +115,7 @@ class GoBDComplianceService {
     return {
       valid: invalidRecords.length === 0,
       invalidRecords,
-      totalRecords: records.length
+      totalRecords: records.length,
     };
   }
 }

@@ -6,12 +6,12 @@ class User extends Model {
   static associate(models) {
     User.belongsTo(models.Company, {
       foreignKey: 'companyId',
-      as: 'company'
+      as: 'company',
     });
 
     User.hasMany(models.Invoice, {
       foreignKey: 'userId',
-      as: 'invoices'
+      as: 'invoices',
     });
   }
 
@@ -31,61 +31,61 @@ module.exports = (sequelize) => {
         unique: true,
         validate: {
           isEmail: true,
-          notEmpty: true
-        }
+          notEmpty: true,
+        },
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       firstName: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          notEmpty: true
-        }
+          notEmpty: true,
+        },
       },
       lastName: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          notEmpty: true
-        }
+          notEmpty: true,
+        },
       },
       role: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'viewer',
         validate: {
-          isIn: [VALID_ROLES]
-        }
+          isIn: [VALID_ROLES],
+        },
       },
       companyId: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
           model: 'companies',
-          key: 'id'
-        }
+          key: 'id',
+        },
       },
       isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
-      }
+        defaultValue: true,
+      },
     },
     {
       sequelize,
       modelName: 'User',
       tableName: 'users',
       defaultScope: {
-        attributes: { exclude: ['password'] }
+        attributes: { exclude: ['password'] },
       },
       scopes: {
         withPassword: {
-          attributes: { include: ['password'] }
-        }
-      }
-    }
+          attributes: { include: ['password'] },
+        },
+      },
+    },
   );
 
   return User;

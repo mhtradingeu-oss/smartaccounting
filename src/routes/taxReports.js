@@ -14,8 +14,8 @@ router.get('/', authenticateToken, requireCompany, async (req, res) => {
     const offset = (page - 1) * limit;
 
     const whereClause = { companyId: req.user.companyId };
-    if (reportType) whereClause.reportType = reportType;
-    if (period) whereClause.period = period;
+    if (reportType) {whereClause.reportType = reportType;}
+    if (period) {whereClause.period = period;}
 
     const taxReports = await TaxReport.findAndCountAll({
       where: whereClause,
@@ -25,15 +25,15 @@ router.get('/', authenticateToken, requireCompany, async (req, res) => {
       include: [{
         model: Company,
         as: 'Company',
-        attributes: ['name']
-      }]
+        attributes: ['name'],
+      }],
     });
 
     res.json({
       taxReports: taxReports.rows,
       total: taxReports.count,
       pages: Math.ceil(taxReports.count / limit),
-      currentPage: parseInt(page)
+      currentPage: parseInt(page),
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -47,13 +47,13 @@ router.get('/:id', authenticateToken, requireRole(['admin', 'accountant', 'audit
     const taxReport = await TaxReport.findOne({
       where: { 
         id,
-        companyId: req.user.companyId
+        companyId: req.user.companyId,
       },
       include: [{
         model: Company,
         as: 'Company',
-        attributes: ['name']
-      }]
+        attributes: ['name'],
+      }],
     });
 
     if (!taxReport) {
@@ -70,14 +70,14 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin', 'accou
   body('reportType').isIn(['USt', 'KSt', 'GewSt', 'annual']).withMessage('Invalid report type'),
   body('period.year').isInt({ min: 2020, max: 2030 }).withMessage('Invalid year'),
   body('period.quarter').optional().isInt({ min: 1, max: 4 }).withMessage('Invalid quarter'),
-  body('period.month').optional().isInt({ min: 1, max: 12 }).withMessage('Invalid month')
+  body('period.month').optional().isInt({ min: 1, max: 12 }).withMessage('Invalid month'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
         error: 'Validation failed', 
-        details: errors.array() 
+        details: errors.array(), 
       });
     }
 
@@ -91,8 +91,8 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin', 'accou
       where: {
         companyId: req.user.companyId,
         reportType,
-        period: JSON.stringify(period)
-      }
+        period: JSON.stringify(period),
+      },
     });
 
     if (existingReport) {
@@ -107,12 +107,12 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin', 'accou
       period: JSON.stringify(period),
       data: data || generatedData,
       status: 'draft',
-      generatedAt: new Date()
+      generatedAt: new Date(),
     });
 
     res.status(201).json({
       message: 'Tax report created successfully',
-      taxReport
+      taxReport,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -127,8 +127,8 @@ router.put('/:id', authenticateToken, requireRole(['admin', 'accountant']), requ
     const taxReport = await TaxReport.findOne({
       where: { 
         id,
-        companyId: req.user.companyId
-      }
+        companyId: req.user.companyId,
+      },
     });
 
     if (!taxReport) {
@@ -142,12 +142,12 @@ router.put('/:id', authenticateToken, requireRole(['admin', 'accountant']), requ
     await taxReport.update({
       data: data || taxReport.data,
       status: status || taxReport.status,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
     res.json({
       message: 'Tax report updated successfully',
-      taxReport
+      taxReport,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -161,8 +161,8 @@ router.post('/:id/submit', authenticateToken, requireRole(['admin', 'accountant'
     const taxReport = await TaxReport.findOne({
       where: { 
         id,
-        companyId: req.user.companyId
-      }
+        companyId: req.user.companyId,
+      },
     });
 
     if (!taxReport) {
@@ -175,12 +175,12 @@ router.post('/:id/submit', authenticateToken, requireRole(['admin', 'accountant'
 
     await taxReport.update({
       status: 'submitted',
-      submittedAt: new Date()
+      submittedAt: new Date(),
     });
 
     res.json({
       message: 'Tax report submitted successfully',
-      taxReport
+      taxReport,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -194,12 +194,12 @@ router.get('/:id/export/elster', authenticateToken, requireCompany, async (req, 
     const taxReport = await TaxReport.findOne({
       where: { 
         id,
-        companyId: req.user.companyId
+        companyId: req.user.companyId,
       },
       include: [{
         model: Company,
-        as: 'Company'
-      }]
+        as: 'Company',
+      }],
     });
 
     if (!taxReport) {
@@ -210,7 +210,7 @@ router.get('/:id/export/elster', authenticateToken, requireCompany, async (req, 
 
     res.set({
       'Content-Type': 'application/xml',
-      'Content-Disposition': `attachment; filename="elster_${taxReport.reportType}_${taxReport.id}.xml"`
+      'Content-Disposition': `attachment; filename="elster_${taxReport.reportType}_${taxReport.id}.xml"`,
     });
 
     res.send(elsterXml);
@@ -226,8 +226,8 @@ router.delete('/:id', authenticateToken, requireRole(['admin']), requireCompany,
     const taxReport = await TaxReport.findOne({
       where: { 
         id,
-        companyId: req.user.companyId
-      }
+        companyId: req.user.companyId,
+      },
     });
 
     if (!taxReport) {
@@ -250,14 +250,14 @@ router.post('/generate', authenticateToken, requireCompany, requireRole(['admin'
   body('reportType').isIn(['USt', 'KSt', 'GewSt', 'annual']).withMessage('Invalid report type'),
   body('period.year').isInt({ min: 2020, max: 2030 }).withMessage('Invalid year'),
   body('period.quarter').optional().isInt({ min: 1, max: 4 }).withMessage('Invalid quarter'),
-  body('period.month').optional().isInt({ min: 1, max: 12 }).withMessage('Invalid month')
+  body('period.month').optional().isInt({ min: 1, max: 12 }).withMessage('Invalid month'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
         error: 'Validation failed', 
-        details: errors.array() 
+        details: errors.array(), 
       });
     }
 
@@ -270,7 +270,7 @@ router.post('/generate', authenticateToken, requireCompany, requireRole(['admin'
       reportType,
       period,
       data: reportData,
-      preview: true
+      preview: true,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });

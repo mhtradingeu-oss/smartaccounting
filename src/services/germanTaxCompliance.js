@@ -6,7 +6,7 @@ class GermanTaxCompliance {
     this.vatRates = {
       STANDARD: 0.19,
       REDUCED: 0.07,
-      EXEMPT: 0.00
+      EXEMPT: 0.00,
     };
     
     this.taxCategories = {
@@ -16,7 +16,7 @@ class GermanTaxCompliance {
       PERSONNEL_COSTS: ['6000-6999'],
       DEPRECIATION: ['7000-7999'],
       FINANCIAL_EXPENSES: ['2000-2999'],
-      EXTRAORDINARY_EXPENSES: ['9000-9999']
+      EXTRAORDINARY_EXPENSES: ['9000-9999'],
     };
   }
 
@@ -33,8 +33,8 @@ class GermanTaxCompliance {
         revenueByVatRate: {
           standard19: 0,
           reduced7: 0,
-          exempt: 0
-        }
+          exempt: 0,
+        },
       },
       expenses: {
         totalExpenses: 0,
@@ -46,19 +46,19 @@ class GermanTaxCompliance {
         expensesByVatRate: {
           inputVat19: 0,
           inputVat7: 0,
-          nonDeductible: 0
-        }
+          nonDeductible: 0,
+        },
       },
       profit: {
         grossProfit: 0,
         netProfit: 0,
-        taxableIncome: 0
+        taxableIncome: 0,
       },
       vatSummary: {
         outputVat: 0,
         inputVat: 0,
-        vatPayable: 0
-      }
+        vatPayable: 0,
+      },
     };
 
     transactions.forEach(transaction => {
@@ -125,19 +125,19 @@ class GermanTaxCompliance {
       taxableSupplies: {
         standardRate: { net: 0, vat: 0 },
         reducedRate: { net: 0, vat: 0 },
-        exempt: { net: 0, vat: 0 }
+        exempt: { net: 0, vat: 0 },
       },
       inputVat: {
         standardRate: 0,
         reducedRate: 0,
         importVat: 0,
-        otherInputVat: 0
+        otherInputVat: 0,
       },
       calculations: {
         totalOutputVat: 0,
         totalInputVat: 0,
         vatPayable: 0,
-        vatRefund: 0
+        vatRefund: 0,
       },
       elsterFields: {
         
@@ -147,8 +147,8 @@ class GermanTaxCompliance {
         Kz36: 0, 
         Kz41: 0, 
         Kz66: 0, 
-        Kz83: 0  
-      }
+        Kz83: 0,  
+      },
     };
 
     transactions.forEach(transaction => {
@@ -205,7 +205,7 @@ class GermanTaxCompliance {
     const compliance = {
       isCompliant: true,
       violations: [],
-      warnings: []
+      warnings: [],
     };
 
     if (!transaction.date) {
@@ -256,7 +256,7 @@ class GermanTaxCompliance {
       previousYearRevenue,
       threshold: 22000, 
       previousThreshold: 17500,
-      reasons: []
+      reasons: [],
     };
 
     if (previousYearRevenue <= eligibility.previousThreshold && 
@@ -329,7 +329,7 @@ class GermanTaxCompliance {
     return {
       xml: elsterXML,
       filename: `UStVA_${vatReturn.period.year}_${vatReturn.period.quarter || vatReturn.period.month}.xml`,
-      validationStatus: this.validateElsterXML(elsterXML)
+      validationStatus: this.validateElsterXML(elsterXML),
     };
   }
 
@@ -339,10 +339,10 @@ class GermanTaxCompliance {
       where: {
         companyId,
         date: {
-          [require('sequelize').Op.between]: [startDate.toDate(), endDate.toDate()]
-        }
+          [require('sequelize').Op.between]: [startDate.toDate(), endDate.toDate()],
+        },
       },
-      order: [['date', 'ASC']]
+      order: [['date', 'ASC']],
     });
   }
 
@@ -355,10 +355,10 @@ class GermanTaxCompliance {
         date: {
           [require('sequelize').Op.between]: [
             new Date(`${year}-01-01`),
-            new Date(`${year}-12-31`)
-          ]
-        }
-      }
+            new Date(`${year}-12-31`),
+          ],
+        },
+      },
     });
     return result || 0;
   }
@@ -391,12 +391,12 @@ class GermanTaxCompliance {
       
       return {
         isValid: xml.includes('<Elster') && xml.includes('</Elster>'),
-        errors: []
+        errors: [],
       };
     } catch (error) {
       return {
         isValid: false,
-        errors: [error.message]
+        errors: [error.message],
       };
     }
   }
@@ -405,7 +405,7 @@ class GermanTaxCompliance {
     const rates = {
       standard: 0.19,
       reduced: 0.07,
-      exempt: 0.0
+      exempt: 0.0,
     };
 
     const rate = rates[rateKey.toLowerCase()] ?? 0;
@@ -423,8 +423,8 @@ class GermanTaxCompliance {
       transactionCount: transactions.length,
       insights: [
         `Quarter ${quarter} revenue: €${totalRevenue.toFixed(2)}`,
-        `VAT collected: €${totalVAT.toFixed(2)}`
-      ]
+        `VAT collected: €${totalVAT.toFixed(2)}`,
+      ],
     };
   }
 
@@ -453,7 +453,7 @@ class GermanTaxCompliance {
 
     return {
       isCompliant: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

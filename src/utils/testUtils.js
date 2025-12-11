@@ -10,7 +10,7 @@ const createTestCompany = async (overrides = {}) => {
     address: 'Test Address',
     city: 'Berlin',
     postalCode: '10115',
-    country: 'Germany'
+    country: 'Germany',
   };
 
   const company = await Company.create({ ...base, ...overrides });
@@ -29,7 +29,7 @@ const createTestUser = async (overrides = {}) => {
     lastName: 'User',
     role: 'admin',
     isActive: true,
-    companyId: company.id
+    companyId: company.id,
   };
 
   const user = await User.create({ ...defaultUser, ...overrides });
@@ -53,7 +53,7 @@ const createTestInvoice = async (overrides = {}) => {
     status: 'pending',
     date: new Date(),
     dueDate: new Date(Date.now() + 30 * 86400000),
-    clientName: 'Client'
+    clientName: 'Client',
   };
 
   const invoice = await Invoice.create({ ...baseInvoice, ...overrides });
@@ -64,5 +64,5 @@ module.exports = {
   createTestUser,
   createTestCompany,
   createTestInvoice,
-  createAuthToken
+  createAuthToken,
 };

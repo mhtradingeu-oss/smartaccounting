@@ -12,7 +12,7 @@ class TaxAccountingEngine {
         domesticReduced: '8300', 
         export: '8100', 
         eu: '8110', 
-        services: '8500' 
+        services: '8500', 
       },
 
       expenses: {
@@ -25,7 +25,7 @@ class TaxAccountingEngine {
         travel: '6600', 
         office: '6800', 
         marketing: '6900', 
-        depreciation: '6200' 
+        depreciation: '6200', 
       },
 
       vat: {
@@ -33,7 +33,7 @@ class TaxAccountingEngine {
         inputTaxReduced: '1401', 
         outputTax: '1771', 
         outputTaxReduced: '1773', 
-        vatPayable: '1780' 
+        vatPayable: '1780', 
       },
 
       assets: {
@@ -42,19 +42,19 @@ class TaxAccountingEngine {
         receivables: '1400', 
         inventory: '3000', 
         equipment: '0600', 
-        buildings: '0200' 
-      }
+        buildings: '0200', 
+      },
     };
 
     this.taxRates = {
       vat: {
         standard: 0.19, 
         reduced: 0.07, 
-        zero: 0.00 
+        zero: 0.00, 
       },
       corporateTax: 0.15, 
       solidarityTax: 0.055, 
-      tradeEarningsTax: 0.035 
+      tradeEarningsTax: 0.035, 
     };
   }
 
@@ -67,7 +67,7 @@ class TaxAccountingEngine {
         vatRate: null,
         isDeductible: false,
         description: '',
-        bookingEntries: []
+        bookingEntries: [],
       };
 
       if (invoice.type === 'income') {
@@ -147,14 +147,14 @@ class TaxAccountingEngine {
         account: this.skr03Accounts.assets.receivables,
         debit: invoice.amount,
         credit: 0,
-        description: `Rechnung ${invoice.number} - ${invoice.supplierName}`
+        description: `Rechnung ${invoice.number} - ${invoice.supplierName}`,
       });
 
       entries.push({
         account: classification.accountCode,
         debit: 0,
         credit: netAmount,
-        description: `Umsatz ${invoice.number}`
+        description: `Umsatz ${invoice.number}`,
       });
 
       if (vatAmount > 0) {
@@ -162,7 +162,7 @@ class TaxAccountingEngine {
           account: classification.vatAccount,
           debit: 0,
           credit: vatAmount,
-          description: `USt ${invoice.number}`
+          description: `USt ${invoice.number}`,
         });
       }
     } else {
@@ -171,14 +171,14 @@ class TaxAccountingEngine {
         account: this.skr03Accounts.assets.bank,
         debit: 0,
         credit: invoice.amount,
-        description: `Zahlung ${invoice.number} - ${invoice.supplierName}`
+        description: `Zahlung ${invoice.number} - ${invoice.supplierName}`,
       });
 
       entries.push({
         account: classification.accountCode,
         debit: netAmount,
         credit: 0,
-        description: `Aufwand ${invoice.number}`
+        description: `Aufwand ${invoice.number}`,
       });
 
       if (vatAmount > 0 && classification.isDeductible) {
@@ -186,7 +186,7 @@ class TaxAccountingEngine {
           account: classification.vatAccount,
           debit: vatAmount,
           credit: 0,
-          description: `Vorsteuer ${invoice.number}`
+          description: `Vorsteuer ${invoice.number}`,
         });
       }
     }
@@ -239,7 +239,7 @@ class TaxAccountingEngine {
 
       const [results] = await sequelize.query(query, {
         replacements: { companyId, periodStart, periodEnd },
-        type: sequelize.QueryTypes.SELECT
+        type: sequelize.QueryTypes.SELECT,
       });
 
       const vatSummary = {
@@ -247,21 +247,21 @@ class TaxAccountingEngine {
         outputVAT: {
           standard: parseFloat(results.output_vat_standard || 0),
           reduced: parseFloat(results.output_vat_reduced || 0),
-          total: parseFloat(results.output_vat_standard || 0) + parseFloat(results.output_vat_reduced || 0)
+          total: parseFloat(results.output_vat_standard || 0) + parseFloat(results.output_vat_reduced || 0),
         },
         inputVAT: {
           standard: parseFloat(results.input_vat_standard || 0),
           reduced: parseFloat(results.input_vat_reduced || 0),
-          total: parseFloat(results.input_vat_standard || 0) + parseFloat(results.input_vat_reduced || 0)
+          total: parseFloat(results.input_vat_standard || 0) + parseFloat(results.input_vat_reduced || 0),
         },
         revenue: {
           net: parseFloat(results.total_revenue || 0),
-          gross: parseFloat(results.total_revenue || 0) + parseFloat(results.output_vat_standard || 0) + parseFloat(results.output_vat_reduced || 0)
+          gross: parseFloat(results.total_revenue || 0) + parseFloat(results.output_vat_standard || 0) + parseFloat(results.output_vat_reduced || 0),
         },
         expenses: {
           net: parseFloat(results.total_expenses || 0),
-          gross: parseFloat(results.total_expenses || 0) + parseFloat(results.input_vat_standard || 0) + parseFloat(results.input_vat_reduced || 0)
-        }
+          gross: parseFloat(results.total_expenses || 0) + parseFloat(results.input_vat_standard || 0) + parseFloat(results.input_vat_reduced || 0),
+        },
       };
 
       vatSummary.vatPayable = vatSummary.outputVAT.total - vatSummary.inputVAT.total;
@@ -289,7 +289,7 @@ class TaxAccountingEngine {
         solidarityTax,
         tradeEarningsTax,
         totalTax: corporateTax + solidarityTax + tradeEarningsTax,
-        effectiveTaxRate: taxableIncome > 0 ? ((corporateTax + solidarityTax + tradeEarningsTax) / taxableIncome) : 0
+        effectiveTaxRate: taxableIncome > 0 ? ((corporateTax + solidarityTax + tradeEarningsTax) / taxableIncome) : 0,
       };
     } catch (error) {
       throw new Error('Failed to calculate income tax estimate');
@@ -313,7 +313,7 @@ class TaxAccountingEngine {
         monthlyReports.push({
           month,
           monthName: new Date(year, month - 1).toLocaleDateString('de-DE', { month: 'long' }),
-          ...monthlyVAT
+          ...monthlyVAT,
         });
       }
 
@@ -322,15 +322,15 @@ class TaxAccountingEngine {
         year,
         annual: {
           vat: vatSummary,
-          incomeTax: incomeTaxEstimate
+          incomeTax: incomeTaxEstimate,
         },
         monthly: monthlyReports,
         compliance: {
           vatDeclarationDue: `${year + 1}-05-31`, 
           corporateTaxDue: `${year + 1}-05-31`, 
-          nextMonthlyVATDue: this.getNextVATDueDate()
+          nextMonthlyVATDue: this.getNextVATDueDate(),
         },
-        warnings: this.generateComplianceWarnings(vatSummary, incomeTaxEstimate)
+        warnings: this.generateComplianceWarnings(vatSummary, incomeTaxEstimate),
       };
     } catch (error) {
       throw new Error('Failed to generate German tax compliance report');
@@ -350,7 +350,7 @@ class TaxAccountingEngine {
       warnings.push({
         type: 'high_vat_liability',
         message: 'Hohe USt-Zahllast - Voranmeldung prüfen',
-        amount: vatSummary.vatPayable
+        amount: vatSummary.vatPayable,
       });
     }
 
@@ -358,14 +358,14 @@ class TaxAccountingEngine {
       warnings.push({
         type: 'quarterly_tax_payment',
         message: 'Vierteljährliche Steuervorauszahlung erforderlich',
-        amount: incomeTaxEstimate.totalTax
+        amount: incomeTaxEstimate.totalTax,
       });
     }
 
     if (vatSummary.revenue.gross > 50000) {
       warnings.push({
         type: 'vat_registration_check',
-        message: 'USt-Registrierung bei Überschreitung der Kleinunternehmergrenze prüfen'
+        message: 'USt-Registrierung bei Überschreitung der Kleinunternehmergrenze prüfen',
       });
     }
 

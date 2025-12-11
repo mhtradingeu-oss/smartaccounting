@@ -5,7 +5,7 @@ const requiredEnvVars = [
   'JWT_SECRET',
   'DATABASE_URL',
   'NODE_ENV',
-  'PORT'
+  'PORT',
 ];
 
 const optionalEnvVars = [
@@ -13,7 +13,7 @@ const optionalEnvVars = [
   'EMAIL_USER', 
   'EMAIL_PASS',
   'STRIPE_SECRET_KEY',
-  'FRONTEND_URL'
+  'FRONTEND_URL',
 ];
 
 function validateEnvironment() {

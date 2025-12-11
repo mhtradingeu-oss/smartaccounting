@@ -22,7 +22,7 @@ class BankStatementService {
         statementPeriodEnd: new Date(),
         openingBalance: 0,
         closingBalance: 0,
-        status: 'PROCESSING'
+        status: 'PROCESSING',
       });
 
       let transactions = [];
@@ -44,7 +44,7 @@ class BankStatementService {
       const processedTransactions = await this.processTransactions(
         companyId, 
         bankStatement.id, 
-        transactions
+        transactions,
       );
 
       await bankStatement.update({
@@ -55,7 +55,7 @@ class BankStatementService {
         statementPeriodStart: this.getEarliestDate(transactions),
         statementPeriodEnd: this.getLatestDate(transactions),
         openingBalance: transactions[0]?.runningBalance || 0,
-        closingBalance: transactions[transactions.length - 1]?.runningBalance || 0
+        closingBalance: transactions[transactions.length - 1]?.runningBalance || 0,
       });
 
       return {
@@ -64,8 +64,8 @@ class BankStatementService {
         summary: {
           totalImported: transactions.length,
           totalProcessed: processedTransactions.length,
-          duplicatesSkipped: transactions.length - processedTransactions.length
-        }
+          duplicatesSkipped: transactions.length - processedTransactions.length,
+        },
       };
 
     } catch (error) {
@@ -80,7 +80,7 @@ class BankStatementService {
       fs.createReadStream(filePath)
         .pipe(csv({
           separator: ';', 
-          mapHeaders: ({ header }) => header.trim().toLowerCase()
+          mapHeaders: ({ header }) => header.trim().toLowerCase(),
         }))
         .on('data', (row) => {
           try {
@@ -111,7 +111,7 @@ class BankStatementService {
         amount: row['betrag'] || row['amount'],
         description: row['verwendungszweck'] || row['description'] || row['zweck'],
         counterparty: row['empfänger/zahlungspflichtiger'] || row['counterparty'],
-        reference: row['referenz'] || row['reference'] || ''
+        reference: row['referenz'] || row['reference'] || '',
       },
       
       {
@@ -119,7 +119,7 @@ class BankStatementService {
         amount: row['amount'],
         description: row['description'] || row['purpose'],
         counterparty: row['counterparty'],
-        reference: row['transaction reference']
+        reference: row['transaction reference'],
       },
       
       {
@@ -127,8 +127,8 @@ class BankStatementService {
         amount: row['amount'] || row['betrag'],
         description: row['description'] || row['beschreibung'],
         counterparty: row['counterparty'] || row['gegenkonto'],
-        reference: row['reference'] || row['referenz']
-      }
+        reference: row['reference'] || row['referenz'],
+      },
     ];
 
     let transaction = null;
@@ -143,7 +143,7 @@ class BankStatementService {
           counterpartyName: mapping.counterparty || '',
           reference: mapping.reference || '',
           transactionType: null, 
-          currency: 'EUR'
+          currency: 'EUR',
         };
         break;
       }
@@ -188,7 +188,7 @@ class BankStatementService {
     const lines = block.split('\n').map(line => line.trim()).filter(line => line);
     const transaction = {
       currency: 'EUR',
-      transactionType: 'DEBIT'
+      transactionType: 'DEBIT',
     };
 
     for (const line of lines) {
@@ -235,8 +235,8 @@ class BankStatementService {
             companyId,
             transactionDate: transactionData.transactionDate,
             amount: transactionData.amount,
-            reference: transactionData.reference
-          }
+            reference: transactionData.reference,
+          },
         });
 
         if (existing) {
@@ -246,7 +246,7 @@ class BankStatementService {
         const bankTransaction = await BankTransaction.create({
           companyId,
           bankStatementId,
-          ...transactionData
+          ...transactionData,
         });
 
         processedTransactions.push(bankTransaction);
@@ -315,8 +315,8 @@ class BankStatementService {
     const unreconciled = await BankTransaction.findAll({
       where: {
         companyId,
-        isReconciled: false
-      }
+        isReconciled: false,
+      },
     });
 
     const reconciled = [];
@@ -330,27 +330,27 @@ class BankStatementService {
           date: {
             [require('sequelize').Op.between]: [
               moment(bankTx.transactionDate).subtract(3, 'days').toDate(),
-              moment(bankTx.transactionDate).add(3, 'days').toDate()
-            ]
-          }
-        }
+              moment(bankTx.transactionDate).add(3, 'days').toDate(),
+            ],
+          },
+        },
       });
 
       for (const tx of potentialMatches) {
         const similarity = this.calculateDescriptionSimilarity(
           bankTx.description, 
-          tx.description
+          tx.description,
         );
         
         if (similarity > 0.7) { 
           await bankTx.update({
             isReconciled: true,
-            reconciledWith: tx.id
+            reconciledWith: tx.id,
           });
           
           await tx.update({
             isReconciled: true,
-            bankTransactionId: bankTx.id
+            bankTransactionId: bankTx.id,
           });
           
           reconciled.push({ bankTransaction: bankTx, transaction: tx });
@@ -427,7 +427,7 @@ class BankStatementService {
           matrix[i][j] = Math.min(
             matrix[i - 1][j - 1] + 1,
             matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
+            matrix[i - 1][j] + 1,
           );
         }
       }

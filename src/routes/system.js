@@ -10,7 +10,7 @@ router.get('/health', async (req, res) => {
     res.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      service: 'SmartAccounting System'
+      service: 'SmartAccounting System',
     });
   } catch (error) {
     res.status(500).json({ error: 'System health check failed' });
@@ -30,9 +30,9 @@ router.get('/info', authenticateToken, requireRole(['admin']), (req, res) => {
       skr03Classification: true,
       elsterExport: true,
       gobdCompliant: true,
-      stripeIntegration: !!process.env.STRIPE_SECRET_KEY
+      stripeIntegration: !!process.env.STRIPE_SECRET_KEY,
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -53,7 +53,7 @@ router.get('/health-detailed', authenticateToken, requireRole(['admin']), async 
       database: databaseStatus,
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({ error: 'Health check failed' });
@@ -66,12 +66,12 @@ router.get('/stats', authenticateToken, requireRole(['admin']), async (req, res)
       totalUsers,
       totalCompanies,
       totalInvoices,
-      totalTaxReports
+      totalTaxReports,
     ] = await Promise.all([
       User.count(),
       Company.count(),
       Invoice.count(),
-      TaxReport.count()
+      TaxReport.count(),
     ]);
 
     const stats = {
@@ -79,7 +79,7 @@ router.get('/stats', authenticateToken, requireRole(['admin']), async (req, res)
       companies: totalCompanies,
       invoices: totalInvoices,
       taxReports: totalTaxReports,
-      systemHealth: 'operational'
+      systemHealth: 'operational',
     };
 
     res.json(stats);
@@ -95,7 +95,7 @@ router.get('/db-test', authenticateToken, requireRole(['admin']), async (req, re
     res.json({
       status: 'connected',
       database: sequelize.config.database,
-      host: sequelize.config.host
+      host: sequelize.config.host,
     });
   } catch (error) {
     logger.error('Database test error:', error);

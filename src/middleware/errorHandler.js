@@ -9,14 +9,14 @@ const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused
     url: req.originalUrl,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get('User-Agent'),
   });
 
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
       error: 'Validation Error',
-      details: formatErrorDetails(Object.values(err.errors))
+      details: formatErrorDetails(Object.values(err.errors)),
     });
   }
 
@@ -24,14 +24,14 @@ const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused
     return res.status(400).json({
       success: false,
       error: 'Database Validation Error',
-      details: formatErrorDetails(err.errors)
+      details: formatErrorDetails(err.errors),
     });
   }
 
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({
       success: false,
-      error: 'Invalid token'
+      error: 'Invalid token',
     });
   }
 
@@ -39,7 +39,7 @@ const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused
     success: false,
     error: process.env.NODE_ENV === 'production'
       ? 'Server Error'
-      : err.message
+      : err.message,
   });
 };
 

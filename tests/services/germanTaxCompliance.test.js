@@ -30,7 +30,7 @@ describe('German Tax Compliance Service', () => {
       const reportData = {
         quarter: 'Q1',
         year: 2024,
-        transactions: []
+        transactions: [],
       };
 
       const report = await germanTaxService.generateQuarterlyReport(reportData);
@@ -49,7 +49,7 @@ describe('German Tax Compliance Service', () => {
         amount: 1000,
         vatAmount: 190,
         clientName: 'Test Client',
-        clientAddress: 'Test Address'
+        clientAddress: 'Test Address',
       };
 
       const isValid = germanTaxService.validateInvoiceCompliance(invoice);
@@ -59,7 +59,7 @@ describe('German Tax Compliance Service', () => {
     test('should detect non-compliant invoice', () => {
       const invoice = {
         number: 'INV-001', // Invalid format
-        amount: 1000
+        amount: 1000,
         // Missing required fields
       };
 

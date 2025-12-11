@@ -4,11 +4,11 @@ class Invoice extends Model {
   static associate(models) {
     Invoice.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user'
+      as: 'user',
     });
     Invoice.belongsTo(models.Company, {
       foreignKey: 'companyId',
-      as: 'company'
+      as: 'company',
     });
   }
 }
@@ -21,60 +21,60 @@ module.exports = (sequelize) => {
         allowNull: false,
         unique: true,
         validate: {
-          notEmpty: true
-        }
+          notEmpty: true,
+        },
       },
       subtotal: {
         type: DataTypes.DECIMAL(12, 2),
-        allowNull: false
+        allowNull: false,
       },
       total: {
         type: DataTypes.DECIMAL(12, 2),
-        allowNull: false
+        allowNull: false,
       },
       amount: {
         type: DataTypes.DECIMAL(12, 2),
-        allowNull: true
+        allowNull: true,
       },
       currency: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'pending'
+        defaultValue: 'pending',
       },
       date: {
         type: DataTypes.DATEONLY,
-        allowNull: false
+        allowNull: false,
       },
       dueDate: {
         type: DataTypes.DATEONLY,
-        allowNull: false
+        allowNull: false,
       },
       clientName: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       notes: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
       },
       userId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       companyId: {
         type: DataTypes.INTEGER,
-        allowNull: false
-      }
+        allowNull: false,
+      },
     },
     {
       sequelize,
       modelName: 'Invoice',
-      tableName: 'invoices'
-    }
+      tableName: 'invoices',
+    },
   );
 
   return Invoice;

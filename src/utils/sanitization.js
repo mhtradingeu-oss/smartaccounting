@@ -10,7 +10,7 @@ const sanitizeHtml = (dirty) => {
   
   return DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
-    ALLOWED_ATTR: []
+    ALLOWED_ATTR: [],
   });
 };
 
@@ -41,5 +41,5 @@ const sanitizeFilename = (filename) => {
 module.exports = {
   sanitizeHtml,
   sanitizeInput,
-  sanitizeFilename
+  sanitizeFilename,
 };

@@ -14,8 +14,8 @@ export default defineConfig({
       exclude: [
         'node_modules/',
         'src/test/',
-        '**/*.config.js'
-      ]
-    }
+        '**/*.config.js',
+      ],
+    },
   },
 });

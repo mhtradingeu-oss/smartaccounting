@@ -11,7 +11,7 @@ class TestHelpers {
       firstName: 'Test',
       lastName: 'User',
       role: 'admin',
-      isActive: true
+      isActive: true,
     };
 
     return await User.create({ ...defaultUser, ...overrides });
@@ -25,7 +25,7 @@ class TestHelpers {
       city: 'Berlin',
       postalCode: '10115',
       country: 'Germany',
-      userId
+      userId,
     };
 
     return await Company.create({ ...defaultCompany, ...overrides });
@@ -40,7 +40,7 @@ class TestHelpers {
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       clientName: 'Test Client',
-      userId
+      userId,
     };
 
     return await Invoice.create({ ...defaultInvoice, ...overrides });
@@ -48,7 +48,7 @@ class TestHelpers {
 
   static createAuthToken(userId) {
     return jwt.sign({ userId }, process.env.JWT_SECRET || 'test-secret', {
-      expiresIn: '1h'
+      expiresIn: '1h',
     });
   }
 
@@ -65,8 +65,8 @@ class TestHelpers {
       email: 'test@example.com',
       created: Math.floor(Date.now() / 1000),
       subscriptions: {
-        data: []
-      }
+        data: [],
+      },
     };
   }
 
@@ -81,10 +81,10 @@ class TestHelpers {
         data: [{
           price: {
             id: 'price_test123',
-            recurring: { interval: 'month' }
-          }
-        }]
-      }
+            recurring: { interval: 'month' },
+          },
+        }],
+      },
     };
   }
 }

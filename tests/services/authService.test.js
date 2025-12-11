@@ -11,12 +11,12 @@ describe('Authentication Service', () => {
         password: 'password123',
         firstName: 'New',
         lastName: 'User',
-        role: 'viewer'
+        role: 'viewer',
       };
 
       const user = await User.create({
         ...userData,
-        password: await bcrypt.hash(userData.password, 10)
+        password: await bcrypt.hash(userData.password, 10),
       });
 
       expect(user.email).toBe(userData.email);
@@ -30,17 +30,17 @@ describe('Authentication Service', () => {
         password: 'password123',
         firstName: 'User',
         lastName: 'One',
-        role: 'viewer'
+        role: 'viewer',
       };
 
       await User.create({
         ...userData,
-        password: await bcrypt.hash(userData.password, 10)
+        password: await bcrypt.hash(userData.password, 10),
       });
 
       await expect(User.create({
         ...userData,
-        password: await bcrypt.hash(userData.password, 10)
+        password: await bcrypt.hash(userData.password, 10),
       })).rejects.toThrow();
     });
   });

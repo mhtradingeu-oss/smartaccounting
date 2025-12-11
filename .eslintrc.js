@@ -1,45 +1,86 @@
-
 module.exports = {
+  root: true,
+
+  // Global environments
   env: {
     node: true,
     es2021: true,
     jest: true,
   },
+
+  // Base rules
   extends: [
     'eslint:recommended',
+    'prettier',
   ],
+
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
+
+  // Global rules (backend rules)
   rules: {
-    // Error prevention
+    // Backend only strict rules
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-undef': 'error',
-    
-    // Code quality
-    'prefer-const': 'error',
+
+    'prefer-const': 'warn',
     'no-var': 'error',
-    'object-shorthand': 'error',
-    'prefer-arrow-callback': 'error',
-    
+    'object-shorthand': 'warn',
+    'prefer-arrow-callback': 'warn',
+
+    'eqeqeq': ['error', 'always'],
+    'curly': ['error', 'all'],
+    'quotes': ['error', 'single'],
+    'semi': ['error', 'always'],
+    'comma-dangle': ['error', 'always-multiline'],
+
     // Security
     'no-eval': 'error',
     'no-implied-eval': 'error',
     'no-new-func': 'error',
-    'no-script-url': 'error',
-    
-    // Best practices
-    'eqeqeq': ['error', 'always'],
-    'curly': ['error', 'all'],
-    'no-multi-spaces': 'error',
-    'no-trailing-spaces': 'error',
-    'comma-dangle': ['error', 'always-multiline'],
-    'quotes': ['error', 'single'],
-    'semi': ['error', 'always'],
   },
+
+  // -------------------------------
+  // React / Frontend Overrides
+  // -------------------------------
+  overrides: [
+    {
+      files: ['client/**/*.{js,jsx,ts,tsx}'],
+      env: {
+        browser: true,
+        es2021: true,
+      },
+      rules: {
+        // Allow window, navigator, localStorage
+        'no-undef': 'off',
+
+        // Stop complaining about unused vars in React
+        'no-unused-vars': 'warn',
+
+        // Allow console in frontend
+        'no-console': 'off',
+      },
+    },
+
+    // Test files
+    {
+      files: ['tests/**/*.js'],
+      env: {
+        jest: true,
+        node: true,
+      },
+      rules: {
+        'no-unused-vars': 'off',
+      },
+    },
+  ],
+
+  // Ignore heavy folders
   ignorePatterns: [
     'node_modules/',
     'dist/',
@@ -48,55 +89,8 @@ module.exports = {
     'client/dist/',
     'uploads/',
     'temp/',
-  ],
-};
-module.exports = {
-  env: {
-    browser: true,
-    es2021: true,
-    node: true,
-    jest: true,
-  },
-  extends: [
-    'eslint:recommended',
-  ],
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-  },
-  rules: {
-    'no-unused-vars': 'warn',
-    'no-console': 'off',
-    'prefer-const': 'error',
-    'no-var': 'error',
-  },
-  ignorePatterns: [
-    'node_modules/',
-    'dist/',
-    'build/',
-    'coverage/',
+
     '*.min.js',
   ],
 };
-module.exports = {
-  env: {
-    node: true,
-    es2021: true,
-    jest: true
-  },
-  extends: [
-    'eslint:recommended',
-    'prettier'
-  ],
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
-  },
-  rules: {
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
-    'prefer-const': 'error',
-    'no-var': 'error'
-  }
-};
+

@@ -66,7 +66,7 @@ export const dashboardAPI = {
       console.error('Dashboard activity API error:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default dashboardAPI;

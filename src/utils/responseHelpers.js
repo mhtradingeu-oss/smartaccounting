@@ -7,7 +7,7 @@ const sendSuccess = (res, message = 'Success', data = {}, statusCode = 200) => {
     success: true,
     message,
     timestamp: new Date().toISOString(),
-    ...data
+    ...data,
   }, statusCode);
 };
 
@@ -20,7 +20,7 @@ const sendError = (res, message = 'Something went wrong', statusCode = 500, erro
     success: false,
     error: message,
     message,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   if (errors) {
@@ -36,8 +36,8 @@ const sendPaginatedResponse = (res, message, data = {}, pagination = {}) => {
     message,
     {
       ...data,
-      pagination
-    }
+      pagination,
+    },
   );
 };
 
@@ -45,7 +45,7 @@ const sendNoContent = (res, message = 'Resource deleted successfully') => {
   return buildResponse(res, {
     success: true,
     message,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   }, 204);
 };
 
@@ -54,5 +54,5 @@ module.exports = {
   sendError,
   sendCreated,
   sendPaginatedResponse,
-  sendNoContent
+  sendNoContent,
 };

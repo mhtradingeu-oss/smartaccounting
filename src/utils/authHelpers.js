@@ -7,10 +7,10 @@ const generateToken = (user) => {
       userId: user.id, 
       email: user.email, 
       role: user.role,
-      companyId: user.companyId 
+      companyId: user.companyId, 
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' },
   );
 };
 
@@ -38,7 +38,7 @@ const formatUserResponse = (user, includeCompany = false) => {
     lastName: user.lastName,
     role: user.role,
     companyId: user.companyId,
-    isActive: user.isActive
+    isActive: user.isActive,
   };
 
   if (includeCompany && user.company) {
@@ -47,7 +47,7 @@ const formatUserResponse = (user, includeCompany = false) => {
       name: user.company.name,
       type: user.company.type,
       subscriptionPlan: user.company.subscriptionPlan,
-      subscriptionStatus: user.company.subscriptionStatus
+      subscriptionStatus: user.company.subscriptionStatus,
     };
   }
 
@@ -59,5 +59,5 @@ module.exports = {
   hashPassword,
   comparePassword,
   validatePassword,
-  formatUserResponse
+  formatUserResponse,
 };

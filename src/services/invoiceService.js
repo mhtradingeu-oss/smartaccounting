@@ -3,7 +3,7 @@ const { Invoice } = require('../models');
 const listInvoices = async (companyId) => {
   return Invoice.findAll({
     where: { companyId },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   });
 };
 
@@ -21,7 +21,7 @@ const createInvoice = async (data, userId, companyId) => {
     clientName: data.clientName,
     userId,
     companyId,
-    notes: data.notes || null
+    notes: data.notes || null,
   };
 
   const invoice = await Invoice.create(invoicePayload);
@@ -30,7 +30,7 @@ const createInvoice = async (data, userId, companyId) => {
 
 const updateInvoice = async (invoiceId, changes, companyId) => {
   const invoice = await Invoice.findOne({
-    where: { id: invoiceId, companyId }
+    where: { id: invoiceId, companyId },
   });
 
   if (!invoice) {
@@ -44,5 +44,5 @@ const updateInvoice = async (invoiceId, changes, companyId) => {
 module.exports = {
   listInvoices,
   createInvoice,
-  updateInvoice
+  updateInvoice,
 };

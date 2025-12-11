@@ -14,7 +14,7 @@ const baseFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
   winston.format.metadata({ fillExcept: ['message', 'level', 'timestamp'] }),
-  winston.format.json()
+  winston.format.json(),
 );
 
 const consoleFormat = winston.format.combine(
@@ -25,7 +25,7 @@ const consoleFormat = winston.format.combine(
       ? ` ${JSON.stringify(metadata, null, 2)}`
       : '';
     return `${timestamp} [${level}]: ${message}${metaString}`;
-  })
+  }),
 );
 
 const transports = [
@@ -34,14 +34,14 @@ const transports = [
     level: 'error',
     maxsize: 10 * 1024 * 1024,
     maxFiles: 5,
-    tailable: true
+    tailable: true,
   }),
   new winston.transports.File({
     filename: path.join(logsDir, 'combined.log'),
     maxsize: 10 * 1024 * 1024,
     maxFiles: 10,
-    tailable: true
-  })
+    tailable: true,
+  }),
 ];
 
 if (environment === 'production') {
@@ -49,17 +49,17 @@ if (environment === 'production') {
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple()
+        winston.format.simple(),
       ),
-      level: 'info'
-    })
+      level: 'info',
+    }),
   );
 } else {
   transports.push(
     new winston.transports.Console({
       format: consoleFormat,
-      level: defaultLevel
-    })
+      level: defaultLevel,
+    }),
   );
 }
 
@@ -69,10 +69,10 @@ const logger = winston.createLogger({
   defaultMeta: {
     service: 'smartaccounting',
     environment,
-    version: process.env.npm_package_version || '1.0.0'
+    version: process.env.npm_package_version || '1.0.0',
   },
   transports,
-  exitOnError: false
+  exitOnError: false,
 });
 
 logger.security = (message, meta = {}) => {

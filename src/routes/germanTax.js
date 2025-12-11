@@ -19,7 +19,7 @@ router.get('/eur/:year', auth, async (req, res) => {
 
     res.json({
       message: 'EÜR generated successfully',
-      data: eurData
+      data: eurData,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to generate EÜR' });
@@ -32,18 +32,18 @@ router.post('/vat-return', auth, async (req, res) => {
 
     if (!year || (!quarter && !month)) {
       return res.status(400).json({ 
-        error: 'Year and either quarter or month must be provided' 
+        error: 'Year and either quarter or month must be provided', 
       });
     }
 
     const vatReturn = await germanTaxCompliance.generateVATReturn(
       req.user.companyId,
-      { year, quarter, month }
+      { year, quarter, month },
     );
 
     res.json({
       message: 'VAT return generated successfully',
-      data: vatReturn
+      data: vatReturn,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to generate VAT return' });
@@ -60,7 +60,7 @@ router.post('/elster-export', auth, async (req, res) => {
 
     const elsterExport = await germanTaxCompliance.generateElsterExport(
       req.user.companyId,
-      vatReturn
+      vatReturn,
     );
 
     res.setHeader('Content-Type', 'application/xml');
@@ -77,12 +77,12 @@ router.get('/kleinunternehmer/:year', auth, async (req, res) => {
 
     const eligibility = await germanTaxCompliance.checkKleinunternehmerEligibility(
       req.user.companyId,
-      year
+      year,
     );
 
     res.json({
       message: 'Kleinunternehmer eligibility checked',
-      data: eligibility
+      data: eligibility,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to check Kleinunternehmer eligibility' });
@@ -101,7 +101,7 @@ router.post('/validate-transaction', auth, async (req, res) => {
 
     res.json({
       message: 'Transaction validation completed',
-      data: compliance
+      data: compliance,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to validate transaction' });
@@ -119,7 +119,7 @@ router.post('/submit', auth, async (req, res) => {
     if (!company) {
       return res.status(404).json({
         success: false,
-        message: 'Company not found'
+        message: 'Company not found',
       });
     }
 
@@ -132,8 +132,8 @@ router.post('/submit', auth, async (req, res) => {
       submittedBy: req.user.id,
       company: {
         name: company.name,
-        taxNumber: company.taxNumber || '12345678901'
-      }
+        taxNumber: company.taxNumber || '12345678901',
+      },
     };
 
     const elsterXML = await elsterService.generateElsterXML(taxReport);
@@ -148,7 +148,7 @@ router.post('/submit', auth, async (req, res) => {
         
         elsterSubmission = {
           status: 'ELSTER_ERROR',
-          error: elsterError.message
+          error: elsterError.message,
         };
       }
     }
@@ -162,7 +162,7 @@ router.post('/submit', auth, async (req, res) => {
         data: JSON.stringify(data),
         status: elsterSubmission?.status || 'GENERATED',
         elsterTransferTicket: elsterSubmission?.transferTicket,
-        submittedBy: req.user.id
+        submittedBy: req.user.id,
       });
     } catch (dbError) {
       }
@@ -177,20 +177,20 @@ router.post('/submit', auth, async (req, res) => {
         status: elsterSubmission.status,
         submissionId: elsterSubmission.submissionId,
         environment: elsterSubmission.environment,
-        message: elsterSubmission.message
+        message: elsterSubmission.message,
       } : null,
       reportData: {
         reportType,
         period,
         transactions: data.transactions || 0,
-        vatSummary: data
-      }
+        vatSummary: data,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to submit tax report',
-      error: error.message
+      error: error.message,
     });
   }
 });

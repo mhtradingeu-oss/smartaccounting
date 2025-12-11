@@ -8,20 +8,20 @@ export const userSchemas = {
     firstName: Joi.string().min(2).max(50).required(),
     lastName: Joi.string().min(2).max(50).required(),
     role: Joi.string().valid('admin', 'accountant', 'auditor', 'viewer').default('viewer'),
-    companyId: Joi.string().uuid().optional()
+    companyId: Joi.string().uuid().optional(),
   }),
   
   login: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
   }),
   
   update: Joi.object({
     firstName: Joi.string().min(2).max(50).optional(),
     lastName: Joi.string().min(2).max(50).optional(),
     email: Joi.string().email().optional(),
-    role: Joi.string().valid('admin', 'accountant', 'auditor', 'viewer').optional()
-  })
+    role: Joi.string().valid('admin', 'accountant', 'auditor', 'viewer').optional(),
+  }),
 };
 
 export const companySchemas = {
@@ -30,7 +30,7 @@ export const companySchemas = {
     taxId: Joi.string().min(5).max(20).required(),
     address: Joi.string().min(10).max(200).required(),
     email: Joi.string().email().required(),
-    phone: Joi.string().min(10).max(20).optional()
+    phone: Joi.string().min(10).max(20).optional(),
   }),
   
   update: Joi.object({
@@ -38,8 +38,8 @@ export const companySchemas = {
     taxId: Joi.string().min(5).max(20).optional(),
     address: Joi.string().min(10).max(200).optional(),
     email: Joi.string().email().optional(),
-    phone: Joi.string().min(10).max(20).optional()
-  })
+    phone: Joi.string().min(10).max(20).optional(),
+  }),
 };
 
 export const invoiceSchemas = {
@@ -53,7 +53,7 @@ export const invoiceSchemas = {
       description: Joi.string().required(),
       quantity: Joi.number().positive().required(),
       unitPrice: Joi.number().positive().required(),
-      vatRate: Joi.number().min(0).max(1).required()
-    })).min(1).required()
-  })
+      vatRate: Joi.number().min(0).max(1).required(),
+    })).min(1).required(),
+  }),
 };

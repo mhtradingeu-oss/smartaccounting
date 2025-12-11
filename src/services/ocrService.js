@@ -34,7 +34,7 @@ class OCRService {
         language = 'deu+eng',
         documentType = 'receipt',
         userId,
-        companyId
+        companyId,
       } = options;
 
       // Validate file
@@ -59,7 +59,7 @@ class OCRService {
         userId,
         companyId,
         ocrText: ocrResult.text,
-        extractedData: structuredData
+        extractedData: structuredData,
       });
 
       // Create audit log
@@ -69,10 +69,10 @@ class OCRService {
           documentId: archiveResult.id,
           documentType,
           extractedData: structuredData,
-          confidence: ocrResult.confidence
+          confidence: ocrResult.confidence,
         },
         userId || 'system',
-        'document'
+        'document',
       );
 
       // Cleanup temp files
@@ -84,14 +84,14 @@ class OCRService {
         text: ocrResult.text,
         confidence: ocrResult.confidence,
         extractedData: structuredData,
-        archiveLocation: archiveResult.archivePath
+        archiveLocation: archiveResult.archivePath,
       };
 
     } catch (error) {
       logger.error('OCR processing error:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -146,13 +146,13 @@ class OCRService {
           if (m.status === 'recognizing text') {
             logger.info(`OCR Progress: ${Math.round(m.progress * 100)}%`);
           }
-        }
+        },
       });
 
       return {
         text: result.data.text,
         confidence: result.data.confidence,
-        words: result.data.words?.length || 0
+        words: result.data.words?.length || 0,
       };
     } catch (error) {
       logger.error('Tesseract OCR error:', error);
@@ -166,7 +166,7 @@ class OCRService {
       'receipt': this.extractReceiptData,
       'invoice': this.extractInvoiceData,
       'bank_statement': this.extractBankStatementData,
-      'tax_document': this.extractTaxDocumentData
+      'tax_document': this.extractTaxDocumentData,
     };
 
     const extractor = extractors[documentType] || this.extractGenericData;
@@ -181,14 +181,14 @@ class OCRService {
       amount: null,
       vatAmount: null,
       vendor: null,
-      items: []
+      items: [],
     };
 
     // German date patterns
     const datePatterns = [
       /(\d{1,2})\.(\d{1,2})\.(\d{4})/,
       /(\d{1,2})\/(\d{1,2})\/(\d{4})/,
-      /(\d{4})-(\d{1,2})-(\d{1,2})/
+      /(\d{4})-(\d{1,2})-(\d{1,2})/,
     ];
 
     for (const pattern of datePatterns) {
@@ -203,7 +203,7 @@ class OCRService {
     const amountPatterns = [
       /(?:Summe|Gesamt|Total|Betrag)[\s:]*(\d+[,\.]\d{2})\s*€?/i,
       /(\d+[,\.]\d{2})\s*EUR?/i,
-      /€\s*(\d+[,\.]\d{2})/i
+      /€\s*(\d+[,\.]\d{2})/i,
     ];
 
     for (const pattern of amountPatterns) {
@@ -218,7 +218,7 @@ class OCRService {
     const vatPatterns = [
       /(?:MwSt|USt|VAT)[\s:]*(\d+[,\.]\d{2})/i,
       /19%[\s:]*(\d+[,\.]\d{2})/i,
-      /7%[\s:]*(\d+[,\.]\d{2})/i
+      /7%[\s:]*(\d+[,\.]\d{2})/i,
     ];
 
     for (const pattern of vatPatterns) {
@@ -249,7 +249,7 @@ class OCRService {
       dueDate: this.extractPattern(text, /(?:Fällig|Due|Zahlbar bis)[\s:]*(\d{1,2}\.\d{1,2}\.\d{4})/i),
       totalAmount: this.extractAmount(text, /(?:Gesamtbetrag|Total|Endbetrag)[\s:]*(\d+[,\.]\d{2})/i),
       netAmount: this.extractAmount(text, /(?:Nettobetrag|Net)[\s:]*(\d+[,\.]\d{2})/i),
-      vatAmount: this.extractAmount(text, /(?:MwSt|USt|VAT)[\s:]*(\d+[,\.]\d{2})/i)
+      vatAmount: this.extractAmount(text, /(?:MwSt|USt|VAT)[\s:]*(\d+[,\.]\d{2})/i),
     };
   }
 
@@ -259,7 +259,7 @@ class OCRService {
       accountNumber: this.extractPattern(text, /(?:Konto|Account)[\s:]*([0-9\s]+)/i),
       period: this.extractPattern(text, /(\d{1,2}\.\d{1,2}\.\d{4})\s*-\s*(\d{1,2}\.\d{1,2}\.\d{4})/),
       openingBalance: this.extractAmount(text, /(?:Anfangssaldo|Opening)[\s:]*(\d+[,\.]\d{2})/i),
-      closingBalance: this.extractAmount(text, /(?:Endsaldo|Closing)[\s:]*(\d+[,\.]\d{2})/i)
+      closingBalance: this.extractAmount(text, /(?:Endsaldo|Closing)[\s:]*(\d+[,\.]\d{2})/i),
     };
   }
 
@@ -268,7 +268,7 @@ class OCRService {
       type: 'tax_document',
       taxYear: this.extractPattern(text, /(?:Steuerjahr|Tax Year)[\s:]*(\d{4})/i),
       taxNumber: this.extractPattern(text, /(?:Steuernummer|Tax ID)[\s:]*([0-9\/]+)/i),
-      assessment: this.extractAmount(text, /(?:Festsetzung|Assessment)[\s:]*(\d+[,\.]\d{2})/i)
+      assessment: this.extractAmount(text, /(?:Festsetzung|Assessment)[\s:]*(\d+[,\.]\d{2})/i),
     };
   }
 
@@ -278,7 +278,7 @@ class OCRService {
       extractedText: text.substring(0, 500), // First 500 characters
       wordCount: text.split(/\s+/).length,
       hasNumbers: /\d/.test(text),
-      hasAmounts: /\d+[,\.]\d{2}/.test(text)
+      hasAmounts: /\d+[,\.]\d{2}/.test(text),
     };
   }
 
@@ -318,13 +318,13 @@ class OCRService {
         ocrText: metadata.ocrText,
         extractedData: JSON.stringify(metadata.extractedData),
         archived: true,
-        retentionPeriod: 10 // 10 years for GoBD compliance
+        retentionPeriod: 10, // 10 years for GoBD compliance
       });
 
       return {
         id: fileRecord.id,
         archivePath,
-        hash: fileHash
+        hash: fileHash,
       };
     } catch (error) {
       logger.error('Document archiving error:', error);
@@ -350,7 +350,7 @@ class OCRService {
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
       '.png': 'image/png',
-      '.tiff': 'image/tiff'
+      '.tiff': 'image/tiff',
     };
     return mimeTypes[ext] || 'application/octet-stream';
   }
@@ -374,17 +374,17 @@ class OCRService {
       const { documentType, dateFrom, dateTo, vendor, minAmount, maxAmount } = criteria;
       
       const whereClause = {};
-      if (criteria.companyId) whereClause.companyId = criteria.companyId;
-      if (documentType) whereClause.documentType = documentType;
+      if (criteria.companyId) {whereClause.companyId = criteria.companyId;}
+      if (documentType) {whereClause.documentType = documentType;}
       if (dateFrom || dateTo) {
         whereClause.createdAt = {};
-        if (dateFrom) whereClause.createdAt[Op.gte] = dateFrom;
-        if (dateTo) whereClause.createdAt[Op.lte] = dateTo;
+        if (dateFrom) {whereClause.createdAt[Op.gte] = dateFrom;}
+        if (dateTo) {whereClause.createdAt[Op.lte] = dateTo;}
       }
 
       const documents = await FileAttachment.findAll({
         where: whereClause,
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
       });
 
       // Filter by extracted data if needed

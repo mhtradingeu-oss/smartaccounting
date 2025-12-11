@@ -11,8 +11,8 @@ router.get('/', authenticateToken, requireCompany, async (req, res) => {
       include: [{
         model: User,
         as: 'users',
-        attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'status']
-      }]
+        attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'status'],
+      }],
     });
 
     if (!company) {
@@ -35,7 +35,7 @@ router.put('/', authenticateToken, requireRole(['admin']), async (req, res) => {
       industry,
       fiscalYearEnd,
       accountingMethod,
-      settings
+      settings,
     } = req.body;
 
     const company = await Company.findByPk(req.user.companyId);
@@ -52,12 +52,12 @@ router.put('/', authenticateToken, requireRole(['admin']), async (req, res) => {
       industry,
       fiscalYearEnd,
       accountingMethod,
-      settings
+      settings,
     });
 
     res.json({
       message: 'Company updated successfully',
-      company
+      company,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });

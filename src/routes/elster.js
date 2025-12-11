@@ -14,7 +14,7 @@ router.post('/submit',
     body('reportType').isIn(['UStVA', 'EÜR']).withMessage('Invalid report type'),
     body('year').isInt({ min: 2020, max: 2030 }).withMessage('Invalid year'),
     body('month').optional().isInt({ min: 1, max: 12 }).withMessage('Invalid month'),
-    body('quarter').optional().isInt({ min: 1, max: 4 }).withMessage('Invalid quarter')
+    body('quarter').optional().isInt({ min: 1, max: 4 }).withMessage('Invalid quarter'),
   ],
   async (req, res) => {
     try {
@@ -23,7 +23,7 @@ router.post('/submit',
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
-          errors: errors.array()
+          errors: errors.array(),
         });
       }
 
@@ -39,7 +39,7 @@ router.post('/submit',
       } else {
         return res.status(400).json({
           success: false,
-          message: 'Either month or quarter must be specified'
+          message: 'Either month or quarter must be specified',
         });
       }
 
@@ -49,7 +49,7 @@ router.post('/submit',
       if (!company) {
         return res.status(404).json({
           success: false,
-          message: 'Company not found'
+          message: 'Company not found',
         });
       }
 
@@ -63,24 +63,24 @@ router.post('/submit',
           status: submissionResult.status,
           submissionId: submissionResult.submissionId,
           environment: submissionResult.environment,
-          timestamp: submissionResult.timestamp
+          timestamp: submissionResult.timestamp,
         },
         reportData: {
           reportType: taxReportData.reportType,
           period: taxReportData.period,
           transactions: taxReportData.transactions,
-          vatSummary: taxReportData.data
-        }
+          vatSummary: taxReportData.data,
+        },
       });
 
     } catch (error) {
       res.status(500).json({
         success: false,
         message: 'Failed to submit tax report to ELSTER',
-        error: error.message
+        error: error.message,
       });
     }
-  }
+  },
 );
 
 router.get('/status/:transferTicket', auth, async (req, res) => {
@@ -91,13 +91,13 @@ router.get('/status/:transferTicket', auth, async (req, res) => {
     
     res.json({
       success: true,
-      status
+      status,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to get submission status',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -116,14 +116,14 @@ router.get('/history', auth, async (req, res) => {
         status: entry.status,
         reportType: entry.reportType,
         period: entry.period,
-        submissionId: entry.response?.submissionId
-      }))
+        submissionId: entry.response?.submissionId,
+      })),
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to get submission history',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -143,13 +143,13 @@ router.post('/generate-xml', auth, async (req, res) => {
       success: true,
       xml: elsterXML,
       isValid,
-      reportData: taxReportData.data
+      reportData: taxReportData.data,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to generate ELSTER XML',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -166,13 +166,13 @@ router.get('/status/:ticket', auth, async (req, res) => {
       status: status.status,
       message: status.message,
       lastUpdate: status.lastUpdate,
-      details: status.details
+      details: status.details,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to check submission status',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -186,13 +186,13 @@ router.get('/history', auth, async (req, res) => {
     res.json({
       success: true,
       history,
-      total: history.length
+      total: history.length,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve submission history',
-      error: error.message
+      error: error.message,
     });
   }
 });

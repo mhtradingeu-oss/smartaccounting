@@ -26,9 +26,9 @@ router.get('/test-config', requireAdmin, (req, res) => {
         ...validation,
         configuration: {
           ...validation.configuration,
-          user: EmailValidation.sanitizeEmailForLog(validation.configuration?.user)
-        }
-      }
+          user: EmailValidation.sanitizeEmailForLog(validation.configuration?.user),
+        },
+      },
     });
   } catch (error) {
     logger.error('Email configuration test failed', { error: error.message });
@@ -74,7 +74,7 @@ router.post('/test-template/:type', requireAdmin, async (req, res) => {
           to,
           companyName,
           new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
-          'Test Umsatzsteuer-Voranmeldung'
+          'Test Umsatzsteuer-Voranmeldung',
         );
         break;
       case 'invoice':
@@ -82,7 +82,7 @@ router.post('/test-template/:type', requireAdmin, async (req, res) => {
           to,
           companyName,
           'TEST-INV-2024-001',
-          '1,234.56'
+          '1,234.56',
         );
         break;
       case 'subscription':
@@ -91,7 +91,7 @@ router.post('/test-template/:type', requireAdmin, async (req, res) => {
           companyName,
           'Professional',
           new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
-          7
+          7,
         );
         break;
       default:

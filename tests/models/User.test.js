@@ -10,7 +10,7 @@ describe('User Model', () => {
         password: await bcrypt.hash('password123', 10),
         firstName: 'Valid',
         lastName: 'User',
-        role: 'viewer'
+        role: 'viewer',
       };
 
       const user = await User.create(userData);
@@ -25,7 +25,7 @@ describe('User Model', () => {
         password: 'password123',
         firstName: 'Test',
         lastName: 'User',
-        role: 'viewer'
+        role: 'viewer',
       })).rejects.toThrow();
     });
 
@@ -35,7 +35,7 @@ describe('User Model', () => {
         password: 'password123',
         firstName: 'Test',
         lastName: 'User',
-        role: 'viewer'
+        role: 'viewer',
       })).rejects.toThrow();
     });
 
@@ -45,7 +45,7 @@ describe('User Model', () => {
         password: 'password123',
         firstName: 'Test',
         lastName: 'User',
-        role: 'invalid-role'
+        role: 'invalid-role',
       })).rejects.toThrow();
     });
   });

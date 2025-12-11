@@ -14,7 +14,7 @@ http.Server.prototype.listen = function(...args) {
   this.address = () => ({
     address: '127.0.0.1',
     family: 'IPv4',
-    port: port || 0
+    port: port || 0,
   });
 
   if (callback) {
@@ -57,8 +57,8 @@ beforeAll(async () => {
     logging: false,
     define: {
       timestamps: true,
-      underscored: false
-    }
+      underscored: false,
+    },
   });
 
   try {
@@ -96,13 +96,13 @@ global.testDb = testDb;
 jest.mock('../src/services/emailService', () => ({
   sendEmail: jest.fn().mockResolvedValue({ success: true, messageId: 'test-message-id' }),
   checkRateLimit: jest.fn().mockReturnValue(true),
-  validateEmail: jest.fn().mockReturnValue(true)
+  validateEmail: jest.fn().mockReturnValue(true),
 }));
 
 jest.mock('../src/services/stripeService', () => ({
   createCustomer: jest.fn().mockResolvedValue({ id: 'cus_test123' }),
   createSubscription: jest.fn().mockResolvedValue({ id: 'sub_test123', status: 'active' }),
-  cancelSubscription: jest.fn().mockResolvedValue({ id: 'sub_test123', status: 'canceled' })
+  cancelSubscription: jest.fn().mockResolvedValue({ id: 'sub_test123', status: 'canceled' }),
 }));
 
 global.testUtils = require('../src/utils/testUtils');

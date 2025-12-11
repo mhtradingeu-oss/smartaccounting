@@ -6,47 +6,47 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     action: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     resourceType: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     resourceId: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     oldValues: {
-      type: DataTypes.JSON
+      type: DataTypes.JSON,
     },
     newValues: {
-      type: DataTypes.JSON
+      type: DataTypes.JSON,
     },
     ipAddress: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     userAgent: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     timestamp: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
+      defaultValue: DataTypes.NOW,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
-        key: 'id'
-      }
-    }
+        key: 'id',
+      },
+    },
   }, {
     tableName: 'audit_logs',
-    timestamps: true
+    timestamps: true,
   });
 
   AuditLog.associate = (models) => {

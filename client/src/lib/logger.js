@@ -47,8 +47,8 @@ class Logger {
           meta,
           timestamp: new Date().toISOString(),
           url: window.location.href,
-          userAgent: navigator.userAgent
-        })
+          userAgent: navigator.userAgent,
+        }),
       });
     } catch (error) {
       

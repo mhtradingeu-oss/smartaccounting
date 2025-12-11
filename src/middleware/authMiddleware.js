@@ -13,20 +13,20 @@ const authenticate = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Authentication credentials are missing'
+      message: 'Authentication credentials are missing',
     });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.userId, {
-      include: [{ model: Company, as: 'company' }]
+      include: [{ model: Company, as: 'company' }],
     });
 
     if (!user || !user.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid authentication token'
+        message: 'Invalid authentication token',
       });
     }
 
@@ -39,7 +39,7 @@ const authenticate = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid or expired token'
+      message: 'Invalid or expired token',
     });
   }
 };
@@ -52,7 +52,7 @@ const requireRole = (allowedRoles = []) => (req, res, next) => {
   if (!req.user || !allowedRoles.includes(req.user.role)) {
     return res.status(403).json({
       success: false,
-      message: 'Insufficient permissions'
+      message: 'Insufficient permissions',
     });
   }
 
@@ -62,5 +62,5 @@ const requireRole = (allowedRoles = []) => (req, res, next) => {
 module.exports = {
   authenticate,
   requireRole,
-  requireCompany
+  requireCompany,
 };

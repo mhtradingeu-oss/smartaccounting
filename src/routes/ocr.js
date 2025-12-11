@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
   filename: (_, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
+  },
 });
 
 const upload = multer({
@@ -37,14 +37,14 @@ const upload = multer({
     const isAllowed =
       allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype);
     cb(isAllowed ? null : new Error('Invalid file type'), isAllowed);
-  }
+  },
 });
 
 const validateDocument = [
   body('documentType')
     .optional()
     .isIn(['invoice', 'receipt', 'bank_statement', 'tax_document'])
-    .withMessage('Unsupported document type')
+    .withMessage('Unsupported document type'),
 ];
 
 const handleValidation = (req, res) => {
@@ -59,7 +59,7 @@ router.use(authenticate);
 router.use(requireCompany);
 
 router.post('/process', upload.single('document'), validateDocument, async (req, res) => {
-  if (handleValidation(req, res)) return;
+  if (handleValidation(req, res)) {return;}
 
   if (!req.file) {
     return sendError(res, 'No document uploaded', 400);
@@ -71,7 +71,7 @@ router.post('/process', upload.single('document'), validateDocument, async (req,
     const ocrResult = await ocrService.processDocument(req.file.path, {
       documentType,
       userId: req.userId,
-      companyId: req.companyId
+      companyId: req.companyId,
     });
 
     if (!ocrResult.success) {
@@ -92,12 +92,12 @@ router.post('/process', upload.single('document'), validateDocument, async (req,
       ocrText: ocrResult.text,
       ocrConfidence: ocrResult.confidence,
       processingStatus: 'processed',
-      extractedData: ocrResult.extractedData
+      extractedData: ocrResult.extractedData,
     });
 
     return sendSuccess(res, 'Document processed', {
       document: documentRecord,
-      ocrResult
+      ocrResult,
     });
   } catch (error) {
     logger.error('OCR processing failed', { error: error.message });
@@ -111,7 +111,7 @@ router.post('/process', upload.single('document'), validateDocument, async (req,
 router.get('/results/:fileId', async (req, res) => {
   try {
     const file = await FileAttachment.findOne({
-      where: { id: req.params.fileId, companyId: req.companyId }
+      where: { id: req.params.fileId, companyId: req.companyId },
     });
 
     if (!file) {
@@ -128,7 +128,7 @@ router.get('/results/:fileId', async (req, res) => {
 router.post('/reprocess/:fileId', requireRole('admin', 'accountant'), async (req, res) => {
   try {
     const file = await FileAttachment.findOne({
-      where: { id: req.params.fileId, companyId: req.companyId }
+      where: { id: req.params.fileId, companyId: req.companyId },
     });
 
     if (!file) {
@@ -138,14 +138,14 @@ router.post('/reprocess/:fileId', requireRole('admin', 'accountant'), async (req
     const ocrResult = await ocrService.processDocument(file.filePath, {
       documentType: file.documentType || 'invoice',
       userId: req.userId,
-      companyId: req.companyId
+      companyId: req.companyId,
     });
 
     await file.update({
       processingStatus: ocrResult.success ? 'processed' : 'failed',
       ocrText: ocrResult.text,
       ocrConfidence: ocrResult.confidence,
-      extractedData: ocrResult.extractedData
+      extractedData: ocrResult.extractedData,
     });
 
     return sendSuccess(res, 'Document reprocessed', { ocrResult });
@@ -159,7 +159,7 @@ router.get('/search', async (req, res) => {
   try {
     const criteria = {
       companyId: req.companyId,
-      ...req.query
+      ...req.query,
     };
     const documents = await ocrService.searchDocuments(criteria);
     return sendSuccess(res, 'Documents found', { count: documents.length, documents });
@@ -172,7 +172,7 @@ router.get('/search', async (req, res) => {
 router.get('/validate/:documentId', async (req, res) => {
   try {
     const file = await FileAttachment.findOne({
-      where: { id: req.params.documentId, companyId: req.companyId }
+      where: { id: req.params.documentId, companyId: req.companyId },
     });
 
     if (!file) {

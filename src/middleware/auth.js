@@ -4,7 +4,7 @@ const {
   authenticate,
   authorize,
   requireAdmin,
-  requireCompany: requireCompanyMiddleware
+  requireCompany: requireCompanyMiddleware,
 } = require('./authMiddleware');
 
 module.exports = {
@@ -12,5 +12,5 @@ module.exports = {
   requireRole: authorize,
   requireAdmin,
   requireCompany: requireCompanyMiddleware,
-  auth: authenticate
+  auth: authenticate,
 };

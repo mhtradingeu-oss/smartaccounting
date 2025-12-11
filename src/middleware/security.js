@@ -16,10 +16,10 @@ const createRateLimiter = (options = {}) => {
     legacyHeaders: false,
     message: {
       error: 'Too many requests from this IP, please try again later.',
-      retryAfter: '15 minutes'
+      retryAfter: '15 minutes',
     },
     skip: (req) => ['/health', '/api/health'].includes(req.path),
-    ...options
+    ...options,
   };
 
   return rateLimit(defaults);
@@ -30,16 +30,16 @@ const authRateLimiter = createRateLimiter({
   max: 5,
   message: {
     error: 'Too many authentication attempts, please try again later.',
-    retryAfter: '5 minutes'
-  }
+    retryAfter: '5 minutes',
+  },
 });
 
 const apiRateLimiter = createRateLimiter({
   max: 100,
   message: {
     error: 'Too many API requests, please try again later.',
-    retryAfter: '15 minutes'
-  }
+    retryAfter: '15 minutes',
+  },
 });
 
 const uploadRateLimiter = createRateLimiter({
@@ -47,34 +47,34 @@ const uploadRateLimiter = createRateLimiter({
   max: 20,
   message: {
     error: 'Too many file uploads, please try again later.',
-    retryAfter: '1 hour'
-  }
+    retryAfter: '1 hour',
+  },
 });
 
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000,
   delayAfter: 50,
-  delayMs: 500
+  delayMs: 500,
 });
 
 const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", 'ws:', 'wss:'],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"]
-    }
+      defaultSrc: ['\'self\''],
+      scriptSrc: ['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\''],
+      imgSrc: ['\'self\'', 'data:', 'https:'],
+      connectSrc: ['\'self\'', 'ws:', 'wss:'],
+      fontSrc: ['\'self\''],
+      objectSrc: ['\'none\''],
+      mediaSrc: ['\'self\''],
+      frameSrc: ['\'none\''],
+      baseUri: ['\'self\''],
+      formAction: ['\'self\''],
+    },
   },
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
 });
 
 const sanitizeObject = (obj) => {
@@ -93,7 +93,7 @@ const sanitizeObject = (obj) => {
 };
 
 const sanitizeString = (value) => {
-  if (typeof value !== 'string') return value;
+  if (typeof value !== 'string') {return value;}
 
   return value
     .replace(/<script[^>]*>.*?<\/script>/gi, '')
@@ -124,7 +124,7 @@ const validateContentType = (allowedTypes = ['application/json']) => (req, res, 
   if (!contentType || !allowedTypes.some((type) => contentType.includes(type))) {
     return res.status(415).json({
       success: false,
-      message: 'Unsupported content type'
+      message: 'Unsupported content type',
     });
   }
 
@@ -138,7 +138,7 @@ const parseSize = (size) => {
 
   const units = { b: 1, kb: 1024, mb: 1024 * 1024, gb: 1024 * 1024 * 1024 };
   const match = String(size).toLowerCase().match(/^(\d+(?:\.\d+)?)(b|kb|mb|gb)$/);
-  if (!match) return 0;
+  if (!match) {return 0;}
   return parseFloat(match[1]) * units[match[2]];
 };
 
@@ -147,7 +147,7 @@ const requestSizeLimiter = (maxSize = '10mb') => (req, res, next) => {
   if (contentLength > parseSize(maxSize)) {
     return res.status(413).json({
       success: false,
-      message: 'Request too large'
+      message: 'Request too large',
     });
   }
   next();
@@ -166,7 +166,7 @@ const requestLogger = (req, res, next) => {
       userAgent: req.get('User-Agent'),
       statusCode: res.statusCode,
       duration: `${duration}ms`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (res.statusCode >= 500) {
@@ -193,7 +193,7 @@ const validateRequest = (validations) => async (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
-      errors: errors.array()
+      errors: errors.array(),
     });
   }
 
@@ -206,7 +206,7 @@ const ipWhitelist = (allowedIPs = []) => (req, res, next) => {
     logger.warn('Blocked request from unauthorized IP', { ip: clientIP });
     return res.status(403).json({
       success: false,
-      message: 'Access denied from your IP address'
+      message: 'Access denied from your IP address',
     });
   }
 
@@ -224,7 +224,7 @@ const csrfProtection = (req, res, next) => {
   if (!csrfToken || !sessionToken || csrfToken !== sessionToken) {
     return res.status(403).json({
       success: false,
-      message: 'CSRF token validation failed'
+      message: 'CSRF token validation failed',
     });
   }
 
@@ -236,7 +236,7 @@ const applySecurityMiddleware = (app) => {
   app.use(mongoSanitize());
   app.use(xss());
   app.use(hpp({
-    whitelist: ['sort', 'fields', 'page', 'limit', 'category', 'status']
+    whitelist: ['sort', 'fields', 'page', 'limit', 'category', 'status'],
   }));
   app.use(requestLogger);
   app.use(compression());
@@ -283,5 +283,5 @@ module.exports = {
   csrfProtection,
   requestLogger,
   validateContentType,
-  requestSizeLimiter
+  requestSizeLimiter,
 };

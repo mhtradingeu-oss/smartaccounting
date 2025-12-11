@@ -13,7 +13,7 @@ router.post('/', (req, res) => {
       url,
       userAgent,
       timestamp,
-      ...meta
+      ...meta,
     };
 
     switch (level) {

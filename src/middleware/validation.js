@@ -12,7 +12,7 @@ const preventNoSqlInjection = (req, res, next) => {
   if (payload) {
     return res.status(400).json({
       success: false,
-      message: 'Invalid request payload'
+      message: 'Invalid request payload',
     });
   }
 
@@ -21,5 +21,5 @@ const preventNoSqlInjection = (req, res, next) => {
 
 module.exports = {
   sanitizeInput,
-  preventNoSqlInjection
+  preventNoSqlInjection,
 };

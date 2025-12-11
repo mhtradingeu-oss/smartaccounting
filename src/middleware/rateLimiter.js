@@ -5,12 +5,12 @@ const loginLimiter = rateLimit({
   max: 5,
   message: {
     success: false,
-    message: 'Too many login attempts, please try again later'
+    message: 'Too many login attempts, please try again later',
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 module.exports = {
-  loginLimiter
+  loginLimiter,
 };

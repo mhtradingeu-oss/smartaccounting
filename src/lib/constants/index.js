@@ -2,30 +2,30 @@ const USER_ROLES = {
   ADMIN: 'admin',
   ACCOUNTANT: 'accountant',
   AUDITOR: 'auditor',
-  VIEWER: 'viewer'
+  VIEWER: 'viewer',
 };
 
 const SUBSCRIPTION_PLANS = {
   BASIC: 'basic',
   PRO: 'pro',
-  ENTERPRISE: 'enterprise'
+  ENTERPRISE: 'enterprise',
 };
 
 const TAX_RATES = {
   DEFAULT_VAT: 0.19,
-  REDUCED_VAT: 0.07
+  REDUCED_VAT: 0.07,
 };
 
 const FILE_UPLOAD = {
   MAX_SIZE: 10_485_760,
   ALLOWED_TYPES: ['image/jpeg', 'image/png', 'application/pdf'],
-  UPLOAD_DIR: 'uploads'
+  UPLOAD_DIR: 'uploads',
 };
 
 const API_STATUS = {
   SUCCESS: 'success',
   ERROR: 'error',
-  PENDING: 'pending'
+  PENDING: 'pending',
 };
 
 const AUDIT_ACTIONS = {
@@ -33,7 +33,7 @@ const AUDIT_ACTIONS = {
   UPDATE: 'update',
   DELETE: 'delete',
   LOGIN: 'login',
-  LOGOUT: 'logout'
+  LOGOUT: 'logout',
 };
 
 module.exports = {
@@ -42,5 +42,5 @@ module.exports = {
   TAX_RATES,
   FILE_UPLOAD,
   API_STATUS,
-  AUDIT_ACTIONS
+  AUDIT_ACTIONS,
 };

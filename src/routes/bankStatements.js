@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({
@@ -31,8 +31,8 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 10 * 1024 * 1024 
-  }
+    fileSize: 10 * 1024 * 1024, 
+  },
 });
 
 router.post('/import', auth, upload.single('bankStatement'), async (req, res) => {
@@ -50,12 +50,12 @@ router.post('/import', auth, upload.single('bankStatement'), async (req, res) =>
       req.user.companyId,
       req.file.path,
       req.file.originalname,
-      format.toUpperCase()
+      format.toUpperCase(),
     );
 
     res.json({
       message: 'Bank statement imported successfully',
-      data: result
+      data: result,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -66,7 +66,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const statements = await BankStatement.findAll({
       where: { companyId: req.user.companyId },
-      order: [['importDate', 'DESC']]
+      order: [['importDate', 'DESC']],
     });
 
     res.json({ data: statements });
@@ -80,9 +80,9 @@ router.get('/:id/transactions', auth, async (req, res) => {
     const transactions = await BankTransaction.findAll({
       where: {
         companyId: req.user.companyId,
-        bankStatementId: req.params.id
+        bankStatementId: req.params.id,
       },
-      order: [['transactionDate', 'DESC']]
+      order: [['transactionDate', 'DESC']],
     });
 
     res.json({ data: transactions });
@@ -99,8 +99,8 @@ router.post('/reconcile', auth, async (req, res) => {
       message: 'Reconciliation completed',
       data: {
         reconciled: reconciled.length,
-        transactions: reconciled
-      }
+        transactions: reconciled,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to reconcile transactions' });
@@ -114,8 +114,8 @@ router.put('/transactions/:id/categorize', auth, async (req, res) => {
     const transaction = await BankTransaction.findOne({
       where: {
         id: req.params.id,
-        companyId: req.user.companyId
-      }
+        companyId: req.user.companyId,
+      },
     });
 
     if (!transaction) {
@@ -124,12 +124,12 @@ router.put('/transactions/:id/categorize', auth, async (req, res) => {
 
     await transaction.update({
       category,
-      vatCategory
+      vatCategory,
     });
 
     res.json({
       message: 'Transaction categorized successfully',
-      data: transaction
+      data: transaction,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to categorize transaction' });

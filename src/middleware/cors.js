@@ -2,7 +2,7 @@ const cors = require('cors');
 
 const envOrigins = [
   process.env.CLIENT_URL,
-  process.env.CORS_ORIGIN
+  process.env.CORS_ORIGIN,
 ];
 
 const allowedOrigins = new Set([
@@ -10,7 +10,7 @@ const allowedOrigins = new Set([
   'http://localhost:3000',
   'http://localhost:5173',
   'https://localhost:3000',
-  'https://localhost:5173'
+  'https://localhost:5173',
 ]);
 
 const corsOptions = {
@@ -43,8 +43,8 @@ const corsOptions = {
     'Connection',
     'Sec-WebSocket-Key',
     'Sec-WebSocket-Version',
-    'Sec-WebSocket-Protocol'
-  ]
+    'Sec-WebSocket-Protocol',
+  ],
 };
 
 module.exports = cors(corsOptions);

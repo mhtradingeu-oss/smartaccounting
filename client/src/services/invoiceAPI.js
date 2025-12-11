@@ -24,7 +24,7 @@ export const invoiceAPI = {
   },
   downloadPDF: async (id) => {
     const response = await api.get(`/api/invoices/${id}/pdf`, {
-      responseType: 'blob'
+      responseType: 'blob',
     });
     return response.data;
   },
@@ -35,7 +35,7 @@ export const invoiceAPI = {
   markAsPaid: async (id, paymentData) => {
     const response = await api.patch(`/api/invoices/${id}/paid`, paymentData);
     return response.data;
-  }
+  },
 };
 
 export default invoiceAPI;

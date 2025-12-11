@@ -9,7 +9,7 @@ const FALLBACK_PLANS = [
     amount: 1999,
     currency: 'EUR',
     interval: 'month',
-    features: ['Simple bookkeeping', 'Email support']
+    features: ['Simple bookkeeping', 'Email support'],
   },
   {
     id: 'price_pro_monthly',
@@ -17,8 +17,8 @@ const FALLBACK_PLANS = [
     amount: 3999,
     currency: 'EUR',
     interval: 'month',
-    features: ['Advanced insights', 'Priority support']
-  }
+    features: ['Advanced insights', 'Priority support'],
+  },
 ];
 
 class StripeService {
@@ -32,15 +32,15 @@ class StripeService {
   }
 
   getClient() {
-    if (this.overrideClient) return this.overrideClient;
-    if (this.defaultClient) return this.defaultClient;
+    if (this.overrideClient) {return this.overrideClient;}
+    if (this.defaultClient) {return this.defaultClient;}
 
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error('STRIPE_SECRET_KEY is not configured');
     }
 
     this.defaultClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2022-11-15'
+      apiVersion: '2022-11-15',
     });
 
     return this.defaultClient;
@@ -72,20 +72,20 @@ class StripeService {
       metadata: {
         ...(payloadSource.metadata || {}),
         companyId,
-        userId: user?.id
-      }
+        userId: user?.id,
+      },
     };
 
     const customer = await client.customers.create(payload);
 
     if (isCompanyInstance) {
       await payloadSource.update({
-        stripeCustomerId: customer.id
+        stripeCustomerId: customer.id,
       });
     } else if (companyId) {
       await Company.update(
         { stripeCustomerId: customer.id },
-        { where: { id: companyId } }
+        { where: { id: companyId } },
       );
     }
 
@@ -101,7 +101,7 @@ class StripeService {
       companyId,
       subscriptionId: company.stripeSubscriptionId || null,
       subscriptionStatus: company.subscriptionStatus || 'inactive',
-      plan: company.subscriptionPlan || 'basic'
+      plan: company.subscriptionPlan || 'basic',
     };
   }
 
@@ -120,14 +120,14 @@ class StripeService {
     const subscription = await client.subscriptions.create({
       customer: customerId,
       items: [{ price: planId }],
-      metadata: { companyId, createdBy: userId }
+      metadata: { companyId, createdBy: userId },
     });
 
     if (company) {
       await company.update({
         stripeSubscriptionId: subscription.id,
         subscriptionStatus: subscription.status || 'active',
-        stripeCustomerId: customerId
+        stripeCustomerId: customerId,
       });
     }
 
@@ -149,7 +149,7 @@ class StripeService {
     try {
       const invoices = await this.getClient().invoices.list({
         limit: 10,
-        customer: `cus_${companyId}`
+        customer: `cus_${companyId}`,
       });
       return invoices.data;
     } catch (error) {

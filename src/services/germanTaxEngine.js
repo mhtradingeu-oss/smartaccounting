@@ -10,13 +10,13 @@ class GermanTaxEngine {
     this.thresholds = {
       kleinunternehmer: 22000,  // €22,000 threshold for Kleinunternehmerregelung
       gewerbesteuer: 24500,     // €24,500 Gewerbesteuer threshold
-      umsatzsteuer: 50000       // €50,000 VAT registration threshold
+      umsatzsteuer: 50000,       // €50,000 VAT registration threshold
     };
   }
 
   // Calculate VAT based on German regulations
   calculateVAT(netAmount, vatType = 'standard', isKleinunternehmer = false) {
-    if (isKleinunternehmer) return 0;
+    if (isKleinunternehmer) {return 0;}
     
     const rate = vatType === 'reduced' ? this.taxRates.reducedVAT : this.taxRates.standardVAT;
     return Math.round((netAmount * rate) * 100) / 100;
@@ -39,14 +39,14 @@ class GermanTaxEngine {
       outputVAT: {
         standardRate: this.sumVATByRate(transactions.sales, 'standard'),
         reducedRate: this.sumVATByRate(transactions.sales, 'reduced'),
-        total: 0
+        total: 0,
       },
       
       // Input VAT (VAT on purchases)
       inputVAT: {
         standardRate: this.sumVATByRate(transactions.purchases, 'standard'),
         reducedRate: this.sumVATByRate(transactions.purchases, 'reduced'),
-        total: 0
+        total: 0,
       },
       
       // Net VAT liability
@@ -55,7 +55,7 @@ class GermanTaxEngine {
       // Special cases
       innerEUDeliveries: 0,
       thirdCountryDeliveries: 0,
-      innerEUAcquisitions: 0
+      innerEUAcquisitions: 0,
     };
 
     vatReport.outputVAT.total = vatReport.outputVAT.standardRate + vatReport.outputVAT.reducedRate;
@@ -82,7 +82,7 @@ class GermanTaxEngine {
       income: {
         operatingIncome: this.categorizeIncome(transactions.income, 'operating'),
         otherIncome: this.categorizeIncome(transactions.income, 'other'),
-        total: 0
+        total: 0,
       },
       
       // Expense categories
@@ -95,7 +95,7 @@ class GermanTaxEngine {
         professionalServices: this.categorizeExpenses(transactions.expenses, 'professional'),
         depreciation: this.categorizeExpenses(transactions.expenses, 'depreciation'),
         other: this.categorizeExpenses(transactions.expenses, 'other'),
-        total: 0
+        total: 0,
       },
       
       // Profit calculation
@@ -104,7 +104,7 @@ class GermanTaxEngine {
       // Tax estimates
       estimatedIncomeTax: 0,
       estimatedTradeTax: 0,
-      estimatedSocialSecurity: 0
+      estimatedSocialSecurity: 0,
     };
   }
 
@@ -114,7 +114,7 @@ class GermanTaxEngine {
     const compliance = {
       isCompliant: true,
       warnings: [],
-      requirements: []
+      requirements: [],
     };
 
     // Check Kleinunternehmerregelung eligibility
@@ -122,7 +122,7 @@ class GermanTaxEngine {
       compliance.requirements.push({
         type: 'kleinunternehmer_eligible',
         message: 'Company is eligible for Kleinunternehmerregelung (small business scheme)',
-        action: 'Consider opting for VAT exemption'
+        action: 'Consider opting for VAT exemption',
       });
     }
 
@@ -131,7 +131,7 @@ class GermanTaxEngine {
       compliance.requirements.push({
         type: 'vat_registration_required',
         message: 'VAT registration is mandatory',
-        action: 'Ensure VAT registration is current'
+        action: 'Ensure VAT registration is current',
       });
     }
 
@@ -140,7 +140,7 @@ class GermanTaxEngine {
       compliance.requirements.push({
         type: 'trade_tax_liable',
         message: 'Company may be liable for trade tax (Gewerbesteuer)',
-        action: 'Calculate and prepare trade tax return'
+        action: 'Calculate and prepare trade tax return',
       });
     }
 
@@ -156,27 +156,27 @@ class GermanTaxEngine {
           date: `${year}-01-10`,
           type: 'UStVA',
           description: 'VAT advance return Q4 previous year',
-          penalty: 'Late filing penalty applies'
+          penalty: 'Late filing penalty applies',
         },
         {
           date: `${year}-02-10`,
           type: 'UStVA',
           description: 'VAT advance return January',
-          penalty: 'Late filing penalty applies'
+          penalty: 'Late filing penalty applies',
         },
         {
           date: `${year}-05-31`,
           type: 'Income Tax',
           description: 'Income tax return deadline',
-          penalty: 'Late filing penalty and interest'
+          penalty: 'Late filing penalty and interest',
         },
         {
           date: `${year}-07-31`,
           type: 'Trade Tax',
           description: 'Trade tax return deadline',
-          penalty: 'Late filing penalty applies'
-        }
-      ]
+          penalty: 'Late filing penalty applies',
+        },
+      ],
     };
   }
 
@@ -187,7 +187,7 @@ class GermanTaxEngine {
       sales: [],
       purchases: [],
       income: [],
-      expenses: []
+      expenses: [],
     };
   }
 

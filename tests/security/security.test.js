@@ -14,8 +14,8 @@ describe('Security Tests', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({
-          email: "admin@example.com'; DROP TABLE users; --",
-          password: 'password'
+          email: 'admin@example.com\'; DROP TABLE users; --',
+          password: 'password',
         });
 
       expect(response.status).toBe(401);
@@ -26,7 +26,7 @@ describe('Security Tests', () => {
 
     test('should prevent brute force attacks', async () => {
       const testUser = await TestHelpers.createTestUser({
-        email: 'bruteforce@example.com'
+        email: 'bruteforce@example.com',
       });
 
       // Multiple failed login attempts
@@ -35,7 +35,7 @@ describe('Security Tests', () => {
           .post('/api/auth/login')
           .send({
             email: 'bruteforce@example.com',
-            password: 'wrongpassword'
+            password: 'wrongpassword',
           });
       }
 
@@ -44,7 +44,7 @@ describe('Security Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'bruteforce@example.com',
-          password: 'wrongpassword'
+          password: 'wrongpassword',
         });
 
       expect([429, 401]).toContain(response.status);
@@ -55,7 +55,7 @@ describe('Security Tests', () => {
         'invalid.token.here',
         'Bearer invalid',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature',
-        ''
+        '',
       ];
 
       for (const token of invalidTokens) {
@@ -79,7 +79,7 @@ describe('Security Tests', () => {
           password: 'password123',
           firstName: maliciousInput,
           lastName: 'User',
-          role: 'viewer'
+          role: 'viewer',
         });
 
       if (response.status === 201) {
@@ -92,7 +92,7 @@ describe('Security Tests', () => {
         .post('/api/auth/login')
         .send({
           email: { $ne: null },
-          password: { $ne: null }
+          password: { $ne: null },
         });
 
       expect(response.status).toBe(400);

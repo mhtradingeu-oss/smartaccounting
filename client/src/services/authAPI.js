@@ -29,7 +29,7 @@ export const authAPI = {
   resetPassword: async (token, password) => {
     const response = await api.post('/api/auth/reset-password', { token, password });
     return response.data;
-  }
+  },
 };
 
 export default authAPI;

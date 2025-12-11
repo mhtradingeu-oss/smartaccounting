@@ -14,7 +14,7 @@ jest.mock('../../src/middleware/authMiddleware', () => ({
     req.companyId = req.companyId || 'test-company-id';
     next();
   },
-  requireRole: () => (req, res, next) => next()
+  requireRole: () => (req, res, next) => next(),
 }));
 
 const app = express();
@@ -41,7 +41,7 @@ describe('Invoice Routes', () => {
         currency: 'EUR',
         status: 'paid',
         userId: testUser.id,
-        companyId: testUser.companyId
+        companyId: testUser.companyId,
       });
 
       const response = await request(app)
@@ -62,7 +62,7 @@ describe('Invoice Routes', () => {
       status: 'pending',
       issueDate: new Date(),
       dueDate: new Date(),
-      clientName: 'Test Client'
+      clientName: 'Test Client',
     };
 
       const response = await request(app)
@@ -78,7 +78,7 @@ describe('Invoice Routes', () => {
       const response = await request(app)
         .post('/api/invoices')
         .send({
-          amount: 1000
+          amount: 1000,
           // Missing required fields
         });
 

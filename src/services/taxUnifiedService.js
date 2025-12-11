@@ -31,18 +31,18 @@ class TaxUnifiedService {
         taxableSupplies: {
           standardRate: { net: 0, vat: 0 },
           reducedRate: { net: 0, vat: 0 },
-          exempt: { net: 0, vat: 0 }
+          exempt: { net: 0, vat: 0 },
         },
         inputVat: {
           standardRate: 0,
           reducedRate: 0,
-          total: 0
+          total: 0,
         },
         calculations: {
           totalOutputVat: 0,
           totalInputVat: 0,
-          vatPayable: 0
-        }
+          vatPayable: 0,
+        },
       };
 
       for (const transaction of transactions) {
@@ -73,20 +73,20 @@ class TaxUnifiedService {
         income: {
           total: 0,
           byCategory: {},
-          taxableIncome: 0
+          taxableIncome: 0,
         },
         expenses: {
           total: 0,
           byCategory: {},
-          deductible: 0
+          deductible: 0,
         },
         profit: 0,
         taxEstimate: {
           incomeTax: 0,
           tradeTax: 0,
           socialSecurity: 0,
-          total: 0
-        }
+          total: 0,
+        },
       };
 
       for (const transaction of transactions) {
@@ -136,7 +136,7 @@ class TaxUnifiedService {
         threshold: GermanTaxUtils.taxThresholds.kleinunternehmer,
         recommendation: currentYearRevenue > GermanTaxUtils.taxThresholds.kleinunternehmer 
           ? 'VAT registration required' 
-          : 'Eligible for small business scheme'
+          : 'Eligible for small business scheme',
       };
     } catch (error) {
       logger.error('Kleinunternehmer eligibility check error:', error);
@@ -177,7 +177,7 @@ class TaxUnifiedService {
       return {
         xml: elsterXML,
         filename: `UStVA_${vatReturn.period.year}_${vatReturn.period.quarter || vatReturn.period.month}.xml`,
-        fields: elsterFields
+        fields: elsterFields,
       };
     } catch (error) {
       logger.error('ELSTER export generation error:', error);
@@ -191,10 +191,10 @@ class TaxUnifiedService {
       where: {
         companyId,
         transactionDate: {
-          [Op.between]: [startDate.toDate(), endDate.toDate()]
-        }
+          [Op.between]: [startDate.toDate(), endDate.toDate()],
+        },
       },
-      order: [['transactionDate', 'ASC']]
+      order: [['transactionDate', 'ASC']],
     });
   }
 
@@ -206,10 +206,10 @@ class TaxUnifiedService {
         transactionDate: {
           [Op.between]: [
             new Date(`${year}-01-01`),
-            new Date(`${year}-12-31`)
-          ]
-        }
-      }
+            new Date(`${year}-12-31`),
+          ],
+        },
+      },
     });
     return result || 0;
   }

@@ -6,7 +6,7 @@ try {
 } catch (error) {
   Redis = null;
   logger.warn('ioredis is not installed; Redis cache disabled', {
-    error: error.message
+    error: error.message,
   });
 }
 
@@ -18,14 +18,14 @@ class CacheManager {
       hits: 0,
       misses: 0,
       sets: 0,
-      deletes: 0
+      deletes: 0,
     };
 
     if (Redis && process.env.REDIS_URL) {
       this.redis = new Redis(process.env.REDIS_URL, {
         retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
-        lazyConnect: true
+        lazyConnect: true,
       });
 
       this.redis.on('connect', () => {
@@ -62,7 +62,7 @@ class CacheManager {
       const serializedValue = JSON.stringify({
         data: value,
         timestamp: Date.now(),
-        ttl: ttlSeconds * 1000
+        ttl: ttlSeconds * 1000,
       });
 
       if (this.redis && this.redis.status === 'ready') {
@@ -182,7 +182,7 @@ class CacheManager {
       ...this.stats,
       hitRate: `${hitRate}%`,
       memorySize: this.memoryCache.size,
-      redisStatus: this.redis ? this.redis.status : 'not_configured'
+      redisStatus: this.redis ? this.redis.status : 'not_configured',
     };
   }
 
@@ -224,7 +224,7 @@ class CacheManager {
 
   async mset(keyValuePairs, ttlSeconds = 300) {
     const promises = Object.entries(keyValuePairs).map(([key, value]) =>
-      this.set(key, value, ttlSeconds)
+      this.set(key, value, ttlSeconds),
     );
     return Promise.all(promises);
   }
@@ -237,12 +237,12 @@ const CacheNamespaces = {
   TAX_REPORT: 'tax_report',
   DASHBOARD: 'dashboard',
   BANK_STATEMENT: 'bank_statement',
-  SYSTEM: 'system'
+  SYSTEM: 'system',
 };
 
 const cacheManager = new CacheManager();
 
 module.exports = {
   cache: cacheManager,
-  CacheNamespaces
+  CacheNamespaces,
 };

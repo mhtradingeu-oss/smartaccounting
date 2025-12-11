@@ -2,7 +2,7 @@ const logger = {
   info: (...args) => console.info('[info]', ...args),
   warn: (...args) => console.warn('[warn]', ...args),
   error: (...args) => console.error('[error]', ...args),
-  debug: (...args) => console.debug('[debug]', ...args)
+  debug: (...args) => console.debug('[debug]', ...args),
 };
 
 const errorHandler = (err, req, res, next) => {
@@ -22,11 +22,11 @@ const errorHandler = (err, req, res, next) => {
 
   res.status(status).json({
     success: false,
-    message
+    message,
   });
 };
 
 module.exports = {
   logger,
-  errorHandler
+  errorHandler,
 };

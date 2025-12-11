@@ -6,103 +6,103 @@ module.exports = (sequelize) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     fileName: {
       type: DataTypes.STRING,
       allowNull: false,
-      field: 'file_name'
+      field: 'file_name',
     },
     originalName: {
       type: DataTypes.STRING,
       allowNull: false,
-      field: 'original_name'
+      field: 'original_name',
     },
     filePath: {
       type: DataTypes.STRING,
       allowNull: false,
-      field: 'file_path'
+      field: 'file_path',
     },
     fileSize: {
       type: DataTypes.INTEGER,
-      field: 'file_size'
+      field: 'file_size',
     },
     mimeType: {
       type: DataTypes.STRING,
-      field: 'mime_type'
+      field: 'mime_type',
     },
     fileHash: {
       type: DataTypes.STRING,
-      field: 'file_hash'
+      field: 'file_hash',
     },
     documentType: {
       type: DataTypes.STRING,
-      field: 'document_type'
+      field: 'document_type',
     },
     userId: {
       type: DataTypes.UUID,
-      field: 'user_id'
+      field: 'user_id',
     },
     companyId: {
       type: DataTypes.UUID,
-      field: 'company_id'
+      field: 'company_id',
     },
     uploadedBy: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'uploaded_by'
+      field: 'uploaded_by',
     },
     ocrText: {
       type: DataTypes.TEXT,
-      field: 'ocr_text'
+      field: 'ocr_text',
     },
     ocrConfidence: {
       type: DataTypes.FLOAT,
-      field: 'ocr_confidence'
+      field: 'ocr_confidence',
     },
     extractedData: {
       type: DataTypes.JSON,
-      field: 'extracted_data'
+      field: 'extracted_data',
     },
     processingStatus: {
       type: DataTypes.STRING,
-      field: 'processing_status'
+      field: 'processing_status',
     },
     archived: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false
+      defaultValue: false,
     },
     retentionPeriod: {
       type: DataTypes.INTEGER,
       field: 'retention_period',
-      defaultValue: 10
+      defaultValue: 10,
     },
     entityType: {
       type: DataTypes.STRING,
-      field: 'entity_type'
+      field: 'entity_type',
     },
     entityId: {
       type: DataTypes.UUID,
-      field: 'entity_id'
-    }
+      field: 'entity_id',
+    },
   }, {
     tableName: 'file_attachments',
     timestamps: true,
-    underscored: true
+    underscored: true,
   });
 
   FileAttachment.associate = (models) => {
     FileAttachment.belongsTo(models.User, { 
       foreignKey: 'uploadedBy', 
-      as: 'uploader' 
+      as: 'uploader', 
     });
     FileAttachment.belongsTo(models.Company, {
       foreignKey: 'companyId',
-      as: 'company'
+      as: 'company',
     });
     FileAttachment.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user'
+      as: 'user',
     });
   };
 

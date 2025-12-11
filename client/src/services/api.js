@@ -53,7 +53,7 @@ api.interceptors.request.use(
   (error) => {
     console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Enhanced response interceptor with better error handling
@@ -101,7 +101,7 @@ api.interceptors.response.use(
     }
     
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

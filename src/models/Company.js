@@ -4,12 +4,12 @@ class Company extends Model {
   static associate(models) {
     Company.hasMany(models.User, {
       foreignKey: 'companyId',
-      as: 'users'
+      as: 'users',
     });
 
     Company.hasMany(models.Invoice, {
       foreignKey: 'companyId',
-      as: 'invoices'
+      as: 'invoices',
     });
   }
 }
@@ -21,44 +21,44 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          notEmpty: true
-        }
+          notEmpty: true,
+        },
       },
       taxId: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+        unique: true,
       },
       address: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       city: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       postalCode: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       country: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       userId: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
       },
       stripeCustomerId: {
         type: DataTypes.STRING,
-        allowNull: true
-      }
+        allowNull: true,
+      },
     },
     {
       sequelize,
       modelName: 'Company',
-      tableName: 'companies'
-    }
+      tableName: 'companies',
+    },
   );
 
   return Company;

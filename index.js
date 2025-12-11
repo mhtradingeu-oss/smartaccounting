@@ -48,7 +48,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -57,7 +57,7 @@ app.get(`${apiPrefix}/health`, (req, res) => {
     status: 'healthy',
     service: 'SmartAccounting Backend',
     timestamp: new Date().toISOString(),
-    port: PORT
+    port: PORT,
   });
 });
 
@@ -83,7 +83,7 @@ app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
     error: 'Route not found',
-    path: req.originalUrl
+    path: req.originalUrl,
   });
 });
 
@@ -97,7 +97,7 @@ async function startServer() {
         host: HOST,
         port: PORT,
         apiPrefix,
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
       });
       logger.info(`Swagger docs available at http://localhost:${PORT}/api/docs`);
     });

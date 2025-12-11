@@ -6,54 +6,54 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     date: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
     },
     description: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
+      allowNull: false,
     },
     currency: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'EUR'
+      defaultValue: 'EUR',
     },
     type: {
       type: DataTypes.ENUM('income', 'expense'),
-      allowNull: false
+      allowNull: false,
     },
     category: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     vatRate: {
       type: DataTypes.DECIMAL(5, 4),
-      defaultValue: 0.19
+      defaultValue: 0.19,
     },
     vatAmount: {
       type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0.00
+      defaultValue: 0.00,
     },
     reference: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
-        key: 'id'
-      }
-    }
+        key: 'id',
+      },
+    },
   }, {
     tableName: 'transactions',
-    timestamps: true
+    timestamps: true,
   });
 
   Transaction.associate = (models) => {

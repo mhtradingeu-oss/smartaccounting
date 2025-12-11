@@ -8,7 +8,7 @@ class TaxCalculator {
     this.germanTaxRates = {
       standard: 19,
       reduced: 7,
-      zero: 0
+      zero: 0,
     };
     
     this.germanTaxCodes = {
@@ -23,7 +23,7 @@ class TaxCalculator {
       KST: '4800',    
       SOLI: '4850',   
 
-      GEWST: '4900'   
+      GEWST: '4900',   
     };
   }
 
@@ -54,17 +54,17 @@ class TaxCalculator {
           companyId,
           type: 'inbound',
           invoiceDate: { [Op.between]: [startDate, endDate] },
-          status: ['processed', 'approved', 'paid']
-        }
+          status: ['processed', 'approved', 'paid'],
+        },
       }),
       Invoice.findAll({
         where: {
           companyId,
           type: 'outbound',
           invoiceDate: { [Op.between]: [startDate, endDate] },
-          status: ['processed', 'approved', 'paid']
-        }
-      })
+          status: ['processed', 'approved', 'paid'],
+        },
+      }),
     ]);
 
     const ustData = {
@@ -89,7 +89,7 @@ class TaxCalculator {
 
       reverseChargeTransactions: 0,
       intraeuTransactions: 0,
-      thirdCountryTransactions: 0
+      thirdCountryTransactions: 0,
     };
 
     for (const invoice of outboundInvoices) {
@@ -133,10 +133,10 @@ class TaxCalculator {
         totalOutputTax: ustData.totalOutputTax,
         totalInputTax: ustData.totalInputTax,
         vatPayable: ustData.vatPayable,
-        complianceStatus: 'GoBD_compliant'
+        complianceStatus: 'GoBD_compliant',
       },
       submissionDeadline: this.calculateDeadline('USt', endDate),
-      elsterFields: this.mapToElsterFields(ustData)
+      elsterFields: this.mapToElsterFields(ustData),
     };
   }
 
@@ -144,8 +144,8 @@ class TaxCalculator {
     const transactions = await Transaction.findAll({
       where: {
         companyId,
-        transactionDate: { [Op.between]: [startDate, endDate] }
-      }
+        transactionDate: { [Op.between]: [startDate, endDate] },
+      },
     });
 
     const kstData = {
@@ -160,7 +160,7 @@ class TaxCalculator {
       totalTaxLiability: 0,
       taxCredits: 0,
       advancePayments: 0,
-      finalTaxDue: 0
+      finalTaxDue: 0,
     };
 
     for (const transaction of transactions) {
@@ -192,7 +192,7 @@ class TaxCalculator {
       period: { start: startDate, end: endDate },
       data: kstData,
       submissionDeadline: this.calculateDeadline('KSt', endDate),
-      complianceNotes: ['Filed according to AO §149', 'Corporate tax act compliance verified']
+      complianceNotes: ['Filed according to AO §149', 'Corporate tax act compliance verified'],
     };
   }
 
@@ -206,7 +206,7 @@ class TaxCalculator {
       municipalityMultiplier: 400, 
       freibetrag: 24500,          
       tradeTax: 0,
-      effectiveTradeTaxRate: 0
+      effectiveTradeTaxRate: 0,
     };
 
     if (gewStData.taxableIncome > gewStData.freibetrag) {
@@ -225,8 +225,8 @@ class TaxCalculator {
       submissionDeadline: this.calculateDeadline('GewSt', endDate),
       municipalityInfo: {
         hebesatz: gewStData.municipalityMultiplier,
-        effectiveRate: gewStData.effectiveTradeTaxRate
-      }
+        effectiveRate: gewStData.effectiveTradeTaxRate,
+      },
     };
   }
 
@@ -234,31 +234,31 @@ class TaxCalculator {
     const transactions = await Transaction.findAll({
       where: {
         companyId,
-        transactionDate: { [Op.between]: [startDate, endDate] }
+        transactionDate: { [Op.between]: [startDate, endDate] },
       },
-      order: [['transactionDate', 'ASC']]
+      order: [['transactionDate', 'ASC']],
     });
 
     const eurData = {
       income: {
         total: 0,
         byCategory: {},
-        byMonth: {}
+        byMonth: {},
       },
       expenses: {
         total: 0,
         byCategory: {},
         businessExpenses: 0,
-        privateExpenses: 0
+        privateExpenses: 0,
       },
       investmentDeductions: {
         total: 0,
         gwa: 0,        
-        afa: 0         
+        afa: 0,         
       },
       profit: 0,
       taxableIncome: 0,
-      personalTaxBasis: 0
+      personalTaxBasis: 0,
     };
 
     for (const transaction of transactions) {
@@ -291,7 +291,7 @@ class TaxCalculator {
       period: { start: startDate, end: endDate },
       data: eurData,
       submissionDeadline: this.calculateDeadline('EÜR', endDate),
-      attachments: ['Anlage EÜR', 'Anlage G', 'Umsatzsteuervoranmeldung']
+      attachments: ['Anlage EÜR', 'Anlage G', 'Umsatzsteuervoranmeldung'],
     };
   }
 
@@ -299,21 +299,21 @@ class TaxCalculator {
     const transactions = await Transaction.findAll({
       where: {
         companyId,
-        transactionDate: { [Op.between]: [startDate, endDate] }
-      }
+        transactionDate: { [Op.between]: [startDate, endDate] },
+      },
     });
 
     const bwaData = {
       revenue: {
         total: 0,
         recurring: 0,
-        oneTime: 0
+        oneTime: 0,
       },
       costs: {
         materialCosts: 0,
         personnelCosts: 0,
         operatingCosts: 0,
-        financialCosts: 0
+        financialCosts: 0,
       },
       margins: {
         grossProfit: 0,
@@ -321,13 +321,13 @@ class TaxCalculator {
         operatingProfit: 0,
         operatingMargin: 0,
         netProfit: 0,
-        netMargin: 0
+        netMargin: 0,
       },
       cashflow: {
         operating: 0,
         investing: 0,
-        financing: 0
-      }
+        financing: 0,
+      },
     };
 
     for (const transaction of transactions) {
@@ -364,8 +364,8 @@ class TaxCalculator {
       kpis: {
         revenueGrowth: 0, 
         costRatio: (bwaData.costs.materialCosts + bwaData.costs.operatingCosts) / bwaData.revenue.total * 100,
-        productivityIndex: bwaData.revenue.total / bwaData.costs.personnelCosts
-      }
+        productivityIndex: bwaData.revenue.total / bwaData.costs.personnelCosts,
+      },
     };
   }
 
@@ -400,7 +400,7 @@ class TaxCalculator {
       Kz87: Math.round(ustData.kz87_reducedTax * 100),
       Kz61: Math.round(ustData.kz61_inputTax19 * 100),
       Kz62: Math.round(ustData.kz62_inputTax7 * 100),
-      Kz83_minus_61: Math.round(ustData.vatPayable * 100)
+      Kz83_minus_61: Math.round(ustData.vatPayable * 100),
     };
   }
 
@@ -412,7 +412,7 @@ class TaxCalculator {
       estgCompliant: true,
       gewstgCompliant: true,
       aoCompliant: true,
-      issues: []
+      issues: [],
     };
 
     if (reportType === 'USt' && reportData.vatPayable < 0 && Math.abs(reportData.vatPayable) > 7500) {

@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, `invoice-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
+  },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -36,11 +36,11 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: storage,
+  storage,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024 
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024, 
   },
-  fileFilter: fileFilter
+  fileFilter,
 });
 
 module.exports = upload;

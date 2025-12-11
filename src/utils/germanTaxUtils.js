@@ -5,13 +5,13 @@ class GermanTaxUtils {
   static vatRates = {
     standard: 0.19,
     reduced: 0.07,
-    zero: 0.00
+    zero: 0.00,
   };
 
   static taxThresholds = {
     kleinunternehmer: 22000,
     gewerbesteuer: 24500,
-    vatRegistration: 50000
+    vatRegistration: 50000,
   };
 
   static skr03Accounts = {
@@ -20,7 +20,7 @@ class GermanTaxUtils {
       domesticReduced: '8300',
       export: '8100',
       eu: '8110',
-      services: '8500'
+      services: '8500',
     },
     expenses: {
       materials: '5000',
@@ -30,13 +30,13 @@ class GermanTaxUtils {
       insurance: '6500',
       travel: '6600',
       office: '6800',
-      marketing: '6900'
+      marketing: '6900',
     },
     vat: {
       inputTax: '1400',
       outputTax: '1771',
-      vatPayable: '1780'
-    }
+      vatPayable: '1780',
+    },
   };
 
   static calculateVAT(netAmount, vatType = 'standard') {
@@ -45,10 +45,10 @@ class GermanTaxUtils {
   }
 
   static calculateIncomeTax(income) {
-    if (income <= 10347) return 0; // Tax-free allowance 2024
-    if (income <= 14926) return income * 0.14;
-    if (income <= 58596) return income * 0.24;
-    if (income <= 277825) return income * 0.42;
+    if (income <= 10347) {return 0;} // Tax-free allowance 2024
+    if (income <= 14926) {return income * 0.14;}
+    if (income <= 58596) {return income * 0.24;}
+    if (income <= 277825) {return income * 0.42;}
     return income * 0.45;
   }
 
@@ -76,13 +76,13 @@ class GermanTaxUtils {
   static categorizeGermanExpense(description) {
     const desc = description.toLowerCase();
     
-    if (desc.includes('miete') || desc.includes('rent')) return 'rent';
-    if (desc.includes('strom') || desc.includes('gas') || desc.includes('wasser')) return 'utilities';
-    if (desc.includes('versicherung')) return 'insurance';
-    if (desc.includes('reise') || desc.includes('travel')) return 'travel';
-    if (desc.includes('büro') || desc.includes('office')) return 'office';
-    if (desc.includes('marketing') || desc.includes('werbung')) return 'marketing';
-    if (desc.includes('gehalt') || desc.includes('lohn')) return 'wages';
+    if (desc.includes('miete') || desc.includes('rent')) {return 'rent';}
+    if (desc.includes('strom') || desc.includes('gas') || desc.includes('wasser')) {return 'utilities';}
+    if (desc.includes('versicherung')) {return 'insurance';}
+    if (desc.includes('reise') || desc.includes('travel')) {return 'travel';}
+    if (desc.includes('büro') || desc.includes('office')) {return 'office';}
+    if (desc.includes('marketing') || desc.includes('werbung')) {return 'marketing';}
+    if (desc.includes('gehalt') || desc.includes('lohn')) {return 'wages';}
     
     return 'other';
   }
@@ -91,7 +91,7 @@ class GermanTaxUtils {
     const deductibleCategories = [
       'office', 'marketing', 'travel', 'training',
       'professional', 'software', 'equipment',
-      'rent', 'utilities', 'insurance', 'wages'
+      'rent', 'utilities', 'insurance', 'wages',
     ];
     
     const nonDeductible = description.toLowerCase();
@@ -107,12 +107,12 @@ class GermanTaxUtils {
   static formatCurrency(amount, currency = 'EUR') {
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
-      currency: currency
+      currency,
     }).format(amount);
   }
 
   static parseGermanAmount(amountString) {
-    if (typeof amountString === 'number') return amountString;
+    if (typeof amountString === 'number') {return amountString;}
     
     const cleaned = amountString
       .replace(/\./g, '')
@@ -128,7 +128,7 @@ class GermanTaxUtils {
       Kz86: Math.round(vatData.reducedRate * 100),
       Kz83: Math.round(vatData.standardTax * 100),
       Kz87: Math.round(vatData.reducedTax * 100),
-      Kz66: Math.round(vatData.inputVat * 100)
+      Kz66: Math.round(vatData.inputVat * 100),
     };
   }
 }

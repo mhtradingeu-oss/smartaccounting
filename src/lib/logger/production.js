@@ -10,10 +10,10 @@ if (!fs.existsSync(logsDir)) {
 
 const logFormat = winston.format.combine(
   winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss'
+    format: 'YYYY-MM-DD HH:mm:ss',
   }),
   winston.format.errors({ stack: true }),
-  winston.format.json()
+  winston.format.json(),
 );
 
 const consoleFormat = winston.format.combine(
@@ -21,7 +21,7 @@ const consoleFormat = winston.format.combine(
   winston.format.simple(),
   winston.format.printf(({ timestamp, level, message, stack }) => {
     return `${timestamp} [${level}]: ${message}${stack ? '\n' + stack : ''}`;
-  })
+  }),
 );
 
 const logger = winston.createLogger({
@@ -34,29 +34,29 @@ const logger = winston.createLogger({
       filename: path.join(logsDir, 'error.log'), 
       level: 'error',
       maxsize: 5242880, 
-      maxFiles: 5
+      maxFiles: 5,
     }),
     new winston.transports.File({ 
       filename: path.join(logsDir, 'combined.log'),
       maxsize: 5242880, 
-      maxFiles: 5
-    })
+      maxFiles: 5,
+    }),
   ],
   exceptionHandlers: [
     new winston.transports.File({ 
-      filename: path.join(logsDir, 'exceptions.log') 
-    })
+      filename: path.join(logsDir, 'exceptions.log'), 
+    }),
   ],
   rejectionHandlers: [
     new winston.transports.File({ 
-      filename: path.join(logsDir, 'rejections.log') 
-    })
-  ]
+      filename: path.join(logsDir, 'rejections.log'), 
+    }),
+  ],
 });
 
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
-    format: consoleFormat
+    format: consoleFormat,
   }));
 }
 

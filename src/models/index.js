@@ -18,5 +18,5 @@ Object.values(models).forEach((model) => {
 module.exports = {
   sequelize,
   syncDatabase,
-  ...models
+  ...models,
 };

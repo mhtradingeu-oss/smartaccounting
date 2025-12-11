@@ -33,7 +33,7 @@ const register = async (payload) => {
     email,
     password: hashedPassword,
     role: payload.role,
-    isActive: true
+    isActive: true,
   });
 
   const company = await Company.create({
@@ -43,7 +43,7 @@ const register = async (payload) => {
     city: 'Berlin',
     postalCode: '10115',
     country: 'Germany',
-    userId: user.id
+    userId: user.id,
   });
 
   await user.update({ companyId: company.id });
@@ -95,5 +95,5 @@ const getProfile = async (userId) => {
 module.exports = {
   register,
   login,
-  getProfile
+  getProfile,
 };

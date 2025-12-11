@@ -33,7 +33,7 @@ describe('Full Workflow Integration Tests', () => {
           password: 'password123',
           firstName: 'Workflow',
           lastName: 'User',
-          role: 'admin'
+          role: 'admin',
         });
 
       expect(registerResponse.status).toBe(201);
@@ -43,7 +43,7 @@ describe('Full Workflow Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'workflow@example.com',
-          password: 'password123'
+          password: 'password123',
         });
 
       expect(loginResponse.status).toBe(200);
@@ -60,7 +60,7 @@ describe('Full Workflow Integration Tests', () => {
           status: 'pending',
           issueDate: new Date(),
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          clientName: 'Integration Test Client'
+          clientName: 'Integration Test Client',
         });
 
       expect(invoiceResponse.status).toBe(201);
@@ -79,7 +79,7 @@ describe('Full Workflow Integration Tests', () => {
         .put(`/api/invoices/${invoiceId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          status: 'paid'
+          status: 'paid',
         });
 
       expect(updateResponse.status).toBe(200);

@@ -41,11 +41,11 @@ class EmailValidation {
       warnings,
       configuration: {
         host: process.env.EMAIL_HOST,
-        port: port,
+        port,
         secure: port === 465,
         user: process.env.EMAIL_USER,
-        hasPassword: !!process.env.EMAIL_PASS
-      }
+        hasPassword: !!process.env.EMAIL_PASS,
+      },
     };
   }
   
@@ -61,20 +61,20 @@ class EmailValidation {
       secure: process.env.EMAIL_PORT === '465',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        pass: process.env.EMAIL_PASS,
       },
       tls: {
         rejectUnauthorized: true,
-        minVersion: 'TLSv1.2'
+        minVersion: 'TLSv1.2',
       },
       connectionTimeout: 10000,
       greetingTimeout: 5000,
-      socketTimeout: 10000
+      socketTimeout: 10000,
     };
   }
   
   static sanitizeEmailForLog(email) {
-    if (!email) return 'N/A';
+    if (!email) {return 'N/A';}
     const [user, domain] = email.split('@');
     return `${user.substring(0, 2)}***@${domain}`;
   }

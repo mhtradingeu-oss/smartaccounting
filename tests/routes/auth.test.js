@@ -21,7 +21,7 @@ describe('Authentication Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
-          password: 'testpass123'
+          password: 'testpass123',
         });
 
       expect(response.status).toBe(200);
@@ -35,7 +35,7 @@ describe('Authentication Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
-          password: 'wrongpassword'
+          password: 'wrongpassword',
         });
 
       expect(response.status).toBe(401);
@@ -47,7 +47,7 @@ describe('Authentication Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'nonexistent@example.com',
-          password: 'password123'
+          password: 'password123',
         });
 
       expect(response.status).toBe(401);
@@ -58,7 +58,7 @@ describe('Authentication Routes', () => {
         .post('/api/auth/login')
         .send({
           email: 'invalid-email',
-          password: ''
+          password: '',
         });
 
       expect(response.status).toBe(400);
@@ -72,7 +72,7 @@ describe('Authentication Routes', () => {
         password: 'password123',
         firstName: 'New',
         lastName: 'User',
-        role: 'viewer'
+        role: 'viewer',
       };
 
       const response = await request(app)
@@ -94,7 +94,7 @@ describe('Authentication Routes', () => {
           password: 'password123',
           firstName: 'Another',
           lastName: 'User',
-          role: 'viewer'
+          role: 'viewer',
         });
 
       expect(response.status).toBe(400);

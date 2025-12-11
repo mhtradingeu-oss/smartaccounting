@@ -20,18 +20,18 @@ router.post('/ustva/generate', authenticate, async (req, res) => {
       'ustva_generated',
       { year, quarter, report: ustvaReport },
       req.user.id,
-      'tax_report'
+      'tax_report',
     );
 
     res.json({
       success: true,
-      report: ustvaReport
+      report: ustvaReport,
     });
   } catch (error) {
     logger.error('UStVA generation error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to generate UStVA report'
+      error: 'Failed to generate UStVA report',
     });
   }
 });
@@ -48,7 +48,7 @@ router.post('/ustva/submit', authenticate, async (req, res) => {
         'ustva_submitted',
         { submissionId: submission.submissionId, reportData },
         req.user.id,
-        'tax_submission'
+        'tax_submission',
       );
     }
 
@@ -57,7 +57,7 @@ router.post('/ustva/submit', authenticate, async (req, res) => {
     logger.error('UStVA submission error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to submit UStVA to ELSTER'
+      error: 'Failed to submit UStVA to ELSTER',
     });
   }
 });
@@ -74,18 +74,18 @@ router.post('/eur/generate', authenticate, async (req, res) => {
       'eur_generated',
       { year, report: eurReport },
       req.user.id,
-      'tax_report'
+      'tax_report',
     );
 
     res.json({
       success: true,
-      report: eurReport
+      report: eurReport,
     });
   } catch (error) {
     logger.error('EÜR generation error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to generate EÜR report'
+      error: 'Failed to generate EÜR report',
     });
   }
 });
@@ -100,13 +100,13 @@ router.get('/compliance/check/:year', authenticate, async (req, res) => {
 
     res.json({
       success: true,
-      compliance
+      compliance,
     });
   } catch (error) {
     logger.error('Tax compliance check error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to check tax compliance'
+      error: 'Failed to check tax compliance',
     });
   }
 });
@@ -123,14 +123,14 @@ router.get('/calendar/:year', authenticate, async (req, res) => {
       success: true,
       calendar: {
         ...calendar,
-        elsterDeadlines: elsterDeadlines.deadlines || elsterDeadlines.fallbackDeadlines
-      }
+        elsterDeadlines: elsterDeadlines.deadlines || elsterDeadlines.fallbackDeadlines,
+      },
     });
   } catch (error) {
     logger.error('Tax calendar error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get tax calendar'
+      error: 'Failed to get tax calendar',
     });
   }
 });
@@ -143,14 +143,14 @@ router.post('/export/gobd', authenticate, async (req, res) => {
     const exportData = await gobdService.exportGoBDData(
       new Date(startDate),
       new Date(endDate),
-      format
+      format,
     );
 
     await gobdService.createImmutableRecord(
       'gobd_export',
       { startDate, endDate, format },
       req.user.id,
-      'export'
+      'export',
     );
 
     res.setHeader('Content-Type', format === 'XML' ? 'application/xml' : 'text/csv');
@@ -160,7 +160,7 @@ router.post('/export/gobd', authenticate, async (req, res) => {
     logger.error('GoBD export error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to export GoBD data'
+      error: 'Failed to export GoBD data',
     });
   }
 });
@@ -172,13 +172,13 @@ router.post('/validate/integrity', authenticate, async (req, res) => {
 
     res.json({
       success: true,
-      validation
+      validation,
     });
   } catch (error) {
     logger.error('Data integrity validation error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to validate data integrity'
+      error: 'Failed to validate data integrity',
     });
   }
 });
@@ -190,13 +190,13 @@ router.get('/elster/test', authenticate, async (req, res) => {
     
     res.json({
       success: true,
-      elster: connectionTest
+      elster: connectionTest,
     });
   } catch (error) {
     logger.error('ELSTER test error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to test ELSTER connection'
+      error: 'Failed to test ELSTER connection',
     });
   }
 });

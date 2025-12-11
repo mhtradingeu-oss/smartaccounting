@@ -17,14 +17,14 @@ const sqliteOptions = {
   storage: storage || ':memory:',
   logging: logging ? (msg) => logger.info(msg) : false,
   pool,
-  define
+  define,
 };
 
 const postgresOptions = {
   logging: logging ? (msg) => logger.info(msg) : false,
   pool,
   define,
-  dialectOptions: Object.keys(dialectOptions).length ? dialectOptions : undefined
+  dialectOptions: Object.keys(dialectOptions).length ? dialectOptions : undefined,
 };
 
 const sequelize = isSqlite
@@ -47,7 +47,7 @@ const syncDatabase = async (options = {}) => {
   const syncConfig = {
     logging: false,
     alter: false,
-    ...options
+    ...options,
   };
   await sequelize.sync(syncConfig);
   logger.info('Database synchronized');
@@ -57,5 +57,5 @@ module.exports = {
   sequelize,
   Sequelize,
   connectDatabase,
-  syncDatabase
+  syncDatabase,
 };

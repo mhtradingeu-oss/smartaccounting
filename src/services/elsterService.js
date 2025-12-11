@@ -20,15 +20,15 @@ class ElsterService {
         tax_number: taxNumber,
         certificate: certificateData,
         timestamp: new Date().toISOString(),
-        api_version: this.apiVersion
+        api_version: this.apiVersion,
       };
 
       const response = await axios.post(`${this.baseURL}/auth`, authData, {
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'SmartAccounting/1.0'
+          'User-Agent': 'SmartAccounting/1.0',
         },
-        timeout: 30000
+        timeout: 30000,
       });
 
       if (response.data.success) {
@@ -36,7 +36,7 @@ class ElsterService {
         return {
           success: true,
           sessionToken: response.data.session_token,
-          validUntil: response.data.valid_until
+          validUntil: response.data.valid_until,
         };
       }
 
@@ -45,7 +45,7 @@ class ElsterService {
       logger.error('ELSTER authentication error:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -60,15 +60,15 @@ class ElsterService {
         period: vatData.period,
         xml_data: xmlData,
         session_token: sessionToken,
-        test_mode: this.testMode
+        test_mode: this.testMode,
       };
 
       const response = await axios.post(`${this.baseURL}/submit/ustva`, submission, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`
+          'Authorization': `Bearer ${sessionToken}`,
         },
-        timeout: 60000
+        timeout: 60000,
       });
 
       if (response.data.success) {
@@ -77,7 +77,7 @@ class ElsterService {
           success: true,
           submissionId: response.data.submission_id,
           transferNumber: response.data.transfer_number,
-          status: 'submitted'
+          status: 'submitted',
         };
       }
 
@@ -86,7 +86,7 @@ class ElsterService {
       logger.error('UStVA submission error:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -101,27 +101,27 @@ class ElsterService {
         year: taxData.year,
         xml_data: xmlData,
         session_token: sessionToken,
-        test_mode: this.testMode
+        test_mode: this.testMode,
       };
 
       const response = await axios.post(`${this.baseURL}/submit/annual`, submission, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`
+          'Authorization': `Bearer ${sessionToken}`,
         },
-        timeout: 120000
+        timeout: 120000,
       });
 
       return {
         success: response.data.success,
         submissionId: response.data.submission_id,
-        status: response.data.status
+        status: response.data.status,
       };
     } catch (error) {
       logger.error('Annual return submission error:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -131,21 +131,21 @@ class ElsterService {
     try {
       const response = await axios.get(`${this.baseURL}/status/${submissionId}`, {
         headers: {
-          'Authorization': `Bearer ${sessionToken}`
-        }
+          'Authorization': `Bearer ${sessionToken}`,
+        },
       });
 
       return {
         success: true,
         status: response.data.status,
         messages: response.data.messages || [],
-        lastUpdated: response.data.last_updated
+        lastUpdated: response.data.last_updated,
       };
     } catch (error) {
       logger.error('Status check error:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -153,7 +153,7 @@ class ElsterService {
   // Generate UStVA XML according to ELSTER schema
   generateUStVAXML(vatData) {
     const builder = new xml2js.Builder({
-      xmldec: { version: '1.0', encoding: 'UTF-8' }
+      xmldec: { version: '1.0', encoding: 'UTF-8' },
     });
 
     const xmlObject = {
@@ -161,7 +161,7 @@ class ElsterService {
         '$': {
           'xmlns': 'http://www.elster.de/2002/XMLSchema',
           'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-          'xsi:schemaLocation': 'http://www.elster.de/2002/XMLSchema UStVA_2024.xsd'
+          'xsi:schemaLocation': 'http://www.elster.de/2002/XMLSchema UStVA_2024.xsd',
         },
         'TransferHeader': {
           'Verfahren': 'UStVA',
@@ -173,16 +173,16 @@ class ElsterService {
           'Datei': {
             'Verschluesselung': 'PKCS#7v1.5',
             'Kompression': 'GZIP',
-            'DatenGroesse': '1024'
-          }
+            'DatenGroesse': '1024',
+          },
         },
         'DatenTeil': {
           'Nutzdatenblock': {
             'NutzdatenHeader': {
               'NutzdatenTicket': crypto.randomUUID(),
               'Empfaenger': {
-                'id': 'F'
-              }
+                'id': 'F',
+              },
             },
             'Nutzdaten': {
               'Anmeldungssteuern': {
@@ -190,7 +190,7 @@ class ElsterService {
                   'Name': vatData.companyName,
                   'Strasse': vatData.address?.street,
                   'PLZ': vatData.address?.postalCode,
-                  'Ort': vatData.address?.city
+                  'Ort': vatData.address?.city,
                 },
                 'Erstellungsdatum': new Date().toISOString().split('T')[0],
                 'Steuerfall': {
@@ -201,14 +201,14 @@ class ElsterService {
                     'Kz41': vatData.outputVAT?.standardRate || 0,
                     'Kz81': vatData.outputVAT?.reducedRate || 0,
                     'Kz66': vatData.inputVAT?.total || 0,
-                    'Kz83': Math.max(0, (vatData.outputVAT?.total || 0) - (vatData.inputVAT?.total || 0))
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    'Kz83': Math.max(0, (vatData.outputVAT?.total || 0) - (vatData.inputVAT?.total || 0)),
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     };
 
     return builder.buildObject(xmlObject);
@@ -235,20 +235,20 @@ class ElsterService {
   async testConnection() {
     try {
       const response = await axios.get(`${this.baseURL}/status`, {
-        timeout: 10000
+        timeout: 10000,
       });
 
       return {
         success: true,
         status: 'connected',
         apiVersion: this.apiVersion,
-        testMode: this.testMode
+        testMode: this.testMode,
       };
     } catch (error) {
       logger.error('ELSTER connection test failed:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -260,14 +260,14 @@ class ElsterService {
       
       return {
         success: true,
-        deadlines: response.data.deadlines
+        deadlines: response.data.deadlines,
       };
     } catch (error) {
       logger.error('Failed to fetch tax deadlines:', error);
       return {
         success: false,
         error: error.message,
-        fallbackDeadlines: this.getDefaultDeadlines(year)
+        fallbackDeadlines: this.getDefaultDeadlines(year),
       };
     }
   }
@@ -278,7 +278,7 @@ class ElsterService {
       { date: `${year}-02-10`, type: 'UStVA', description: 'VAT advance return January' },
       { date: `${year}-03-10`, type: 'UStVA', description: 'VAT advance return February' },
       { date: `${year}-05-31`, type: 'ESt', description: 'Income tax return' },
-      { date: `${year}-07-31`, type: 'GewSt', description: 'Trade tax return' }
+      { date: `${year}-07-31`, type: 'GewSt', description: 'Trade tax return' },
     ];
   }
 }

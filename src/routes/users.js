@@ -14,8 +14,8 @@ router.get('/', authenticateToken, requireCompany, requireRole(['admin']), async
       include: [{
         model: Company,
         as: 'Company',
-        attributes: ['id', 'name']
-      }]
+        attributes: ['id', 'name'],
+      }],
     });
 
     res.json(users);
@@ -42,14 +42,14 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin']), asyn
       password: hashedPassword,
       role,
       companyId: req.user.companyId,
-      status: 'active'
+      status: 'active',
     });
 
     const { password: _, ...userResponse } = user.toJSON();
 
     res.status(201).json({
       message: 'User created successfully',
-      user: userResponse
+      user: userResponse,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -64,8 +64,8 @@ router.put('/:userId', authenticateToken, requireRole(['admin']), requireCompany
     const user = await User.findOne({
       where: { 
         id: userId,
-        companyId: req.user.companyId 
-      }
+        companyId: req.user.companyId, 
+      },
     });
 
     if (!user) {
@@ -77,14 +77,14 @@ router.put('/:userId', authenticateToken, requireRole(['admin']), requireCompany
       lastName,
       email,
       role,
-      status
+      status,
     });
 
     const { password: _, ...userResponse } = user.toJSON();
 
     res.json({
       message: 'User updated successfully',
-      user: userResponse
+      user: userResponse,
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -98,8 +98,8 @@ router.delete('/:userId', authenticateToken, requireRole(['admin']), requireComp
     const user = await User.findOne({
       where: { 
         id: userId,
-        companyId: req.user.companyId 
-      }
+        companyId: req.user.companyId, 
+      },
     });
 
     if (!user) {

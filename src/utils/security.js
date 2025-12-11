@@ -44,5 +44,5 @@ const containsNoSqlOperators = (value) => {
 
 module.exports = {
   sanitizePayload,
-  containsNoSqlOperators
+  containsNoSqlOperators,
 };
