@@ -1,17 +1,18 @@
 
-const request = require('supertest');
 const express = require('express');
 const invoiceRoutes = require('../../src/routes/invoices');
 const { Invoice, User } = require('../../src/models');
+
+let mockCurrentUser = { id: 1, role: 'admin', companyId: null };
 jest.mock('../../src/middleware/authMiddleware', () => ({
   authenticate: (req, res, next) => {
-    req.user = { id: 1, role: 'admin', companyId: 'test-company-id' };
+    req.user = { id: mockCurrentUser.id, role: mockCurrentUser.role, companyId: mockCurrentUser.companyId };
     req.userId = req.user.id;
     req.companyId = req.user.companyId;
     next();
   },
   requireCompany: (req, res, next) => {
-    req.companyId = req.companyId || 'test-company-id';
+    req.companyId = req.companyId || mockCurrentUser.companyId;
     next();
   },
   requireRole: () => (req, res, next) => next(),
@@ -20,12 +21,17 @@ jest.mock('../../src/middleware/authMiddleware', () => ({
 const app = express();
 app.use(express.json());
 app.use('/api/invoices', invoiceRoutes);
+app.use((err, _req, res, _next) => {
+  const status = err.status || 500;
+  res.status(status).json({ message: err.message || 'Error' });
+});
 
 describe('Invoice Routes', () => {
   let testUser;
 
   beforeEach(async () => {
     testUser = await global.testUtils.createTestUser();
+    mockCurrentUser = { id: testUser.id, role: testUser.role, companyId: testUser.companyId };
   });
 
   describe('GET /api/invoices', () => {
@@ -44,8 +50,11 @@ describe('Invoice Routes', () => {
         companyId: testUser.companyId,
       });
 
-      const response = await request(app)
-        .get('/api/invoices');
+      const response = await global.requestApp({
+        app,
+        method: 'GET',
+        url: '/api/invoices',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('invoices');
@@ -65,9 +74,12 @@ describe('Invoice Routes', () => {
       clientName: 'Test Client',
     };
 
-      const response = await request(app)
-        .post('/api/invoices')
-        .send(invoiceData);
+      const response = await global.requestApp({
+        app,
+        method: 'POST',
+        url: '/api/invoices',
+        body: invoiceData,
+      });
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('invoice');
@@ -75,12 +87,14 @@ describe('Invoice Routes', () => {
     });
 
     test('should validate required fields', async () => {
-      const response = await request(app)
-        .post('/api/invoices')
-        .send({
+      const response = await global.requestApp({
+        app,
+        method: 'POST',
+        url: '/api/invoices',
+        body: {
           amount: 1000,
-          // Missing required fields
-        });
+        },
+      });
 
       expect(response.status).toBe(400);
     });

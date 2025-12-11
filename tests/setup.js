@@ -2,27 +2,10 @@ process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'sqlite::memory:';
 
 const { Sequelize } = require('sequelize');
-const http = require('http');
+const httpMocks = require('node-mocks-http');
+const { EventEmitter } = require('events');
 const { logger } = require('../src/utils/errorHandler');
 const { sequelize } = require('../src/models');
-
-http.Server.prototype.listen = function(...args) {
-  const lastArg = args[args.length - 1];
-  const callback = typeof lastArg === 'function' ? args.pop() : undefined;
-  const port = typeof args[0] === 'number' ? args[0] : 0;
-
-  this.address = () => ({
-    address: '127.0.0.1',
-    family: 'IPv4',
-    port: port || 0,
-  });
-
-  if (callback) {
-    process.nextTick(callback);
-  }
-
-  return this;
-};
 
 // Suppress console logs during testing
 if (process.env.NODE_ENV === 'test') {
@@ -78,20 +61,52 @@ afterAll(async () => {
 
 afterEach(async () => {
   jest.clearAllMocks();
-  if (testDb) {
-    const models = Object.keys(testDb.models);
-    for (const modelName of models) {
-      try {
-        await testDb.models[modelName].destroy({ where: {}, force: true });
-      } catch (error) {
-        // Ignore cleanup failures
-      }
+  const models = Object.values(sequelize.models);
+  for (const model of models) {
+    try {
+      await model.destroy({ where: {}, force: true });
+    } catch (error) {
+      // Ignore cleanup failures
     }
   }
 });
 
 // Export test utilities
 global.testDb = testDb;
+global.requestApp = ({ app, method = 'GET', url = '/', headers = {}, body }) => {
+  return new Promise((resolve) => {
+    const normalizedHeaders = { ...headers };
+    if (body && !normalizedHeaders['content-type']) {
+      normalizedHeaders['content-type'] = 'application/json';
+    }
+
+    const req = httpMocks.createRequest({
+      method,
+      url,
+      headers: normalizedHeaders,
+      body,
+    });
+
+    const res = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
+    res.on('end', () => {
+      let data = res._getData();
+      try {
+        data = typeof data === 'string' && data.length ? JSON.parse(data) : data;
+      } catch (_) {
+        // Leave data as-is if JSON parse fails
+      }
+
+      resolve({
+        status: res.statusCode,
+        body: data,
+        headers: res._getHeaders(),
+      });
+    });
+
+    app.handle(req, res);
+  });
+};
 
 jest.mock('../src/services/emailService', () => ({
   sendEmail: jest.fn().mockResolvedValue({ success: true, messageId: 'test-message-id' }),

@@ -24,8 +24,15 @@ const createInvoice = async (data, userId, companyId) => {
     notes: data.notes || null,
   };
 
-  const invoice = await Invoice.create(invoicePayload);
-  return invoice;
+  try {
+    const invoice = await Invoice.create(invoicePayload);
+    return invoice;
+  } catch (error) {
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+      error.status = 400;
+    }
+    throw error;
+  }
 };
 
 const updateInvoice = async (invoiceId, changes, companyId) => {

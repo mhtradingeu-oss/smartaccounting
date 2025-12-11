@@ -1,5 +1,4 @@
 
-const request = require('supertest');
 const express = require('express');
 const { sequelize } = require('../../src/models');
 
@@ -13,6 +12,10 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use((err, _req, res, _next) => {
+  const status = err.status || 500;
+  res.status(status).json({ message: err.message || 'Error' });
+});
 
 describe('Full Workflow Integration Tests', () => {
   let authToken;
@@ -26,61 +29,76 @@ describe('Full Workflow Integration Tests', () => {
   describe('Complete User Journey', () => {
     test('should complete full invoice workflow', async () => {
       // 1. Register user
-      const registerResponse = await request(app)
-        .post('/api/auth/register')
-        .send({
+      const registerResponse = await global.requestApp({
+        app,
+        method: 'POST',
+        url: '/api/auth/register',
+        body: {
           email: 'workflow@example.com',
           password: 'password123',
           firstName: 'Workflow',
           lastName: 'User',
           role: 'admin',
-        });
+        },
+      });
 
       expect(registerResponse.status).toBe(201);
 
       // 2. Login user
-      const loginResponse = await request(app)
-        .post('/api/auth/login')
-        .send({
+      const loginResponse = await global.requestApp({
+        app,
+        method: 'POST',
+        url: '/api/auth/login',
+        body: {
           email: 'workflow@example.com',
           password: 'password123',
-        });
+        },
+      });
 
       expect(loginResponse.status).toBe(200);
       authToken = loginResponse.body.token;
 
       // 3. Create invoice
-      const invoiceResponse = await request(app)
-        .post('/api/invoices')
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          number: 'INV-WORKFLOW-001',
+      const invoiceResponse = await global.requestApp({
+        app,
+        method: 'POST',
+        url: '/api/invoices',
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: {
+          invoiceNumber: 'INV-WORKFLOW-001',
           amount: 2000.00,
           currency: 'EUR',
           status: 'pending',
           issueDate: new Date(),
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           clientName: 'Integration Test Client',
-        });
+        },
+      });
 
       expect(invoiceResponse.status).toBe(201);
       const invoiceId = invoiceResponse.body.invoice.id;
 
       // 4. Get dashboard data
-      const dashboardResponse = await request(app)
-        .get('/api/dashboard/stats')
-        .set('Authorization', `Bearer ${authToken}`);
+      const dashboardResponse = await global.requestApp({
+        app,
+        method: 'GET',
+        url: '/api/dashboard/stats',
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
 
       expect(dashboardResponse.status).toBe(200);
       expect(dashboardResponse.body).toHaveProperty('totalRevenue');
 
       // 5. Update invoice status
-      const updateResponse = await request(app)
-        .put(`/api/invoices/${invoiceId}`)
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
+      const updateResponse = await global.requestApp({
+        app,
+        method: 'PUT',
+        url: `/api/invoices/${invoiceId}`,
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: {
           status: 'paid',
-        });
+        },
+      });
 
       expect(updateResponse.status).toBe(200);
       expect(updateResponse.body.invoice.status).toBe('paid');
@@ -89,16 +107,22 @@ describe('Full Workflow Integration Tests', () => {
 
   describe('Error Handling Integration', () => {
     test('should handle unauthorized access properly', async () => {
-      const response = await request(app)
-        .get('/api/dashboard/stats');
+      const response = await global.requestApp({
+        app,
+        method: 'GET',
+        url: '/api/dashboard/stats',
+      });
 
       expect(response.status).toBe(401);
     });
 
     test('should handle invalid token', async () => {
-      const response = await request(app)
-        .get('/api/dashboard/stats')
-        .set('Authorization', 'Bearer invalid-token');
+      const response = await global.requestApp({
+        app,
+        method: 'GET',
+        url: '/api/dashboard/stats',
+        headers: { Authorization: 'Bearer invalid-token' },
+      });
 
       expect(response.status).toBe(401);
     });
