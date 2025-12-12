@@ -1,33 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import {
-  HomeIcon,
-  DocumentTextIcon,
-  BanknotesIcon,
-  DocumentChartBarIcon,
-  CloudArrowUpIcon,
-  CreditCardIcon,
-  Cog6ToothIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  UserCircleIcon,
-  ChartBarIcon,
-  CalculatorIcon,
-  ShieldCheckIcon,
-  BellIcon,
-  BuildingOfficeIcon,
-  UsersIcon,
-  ClipboardDocumentListIcon,
-  CurrencyEuroIcon,
-} from '@heroicons/react/24/outline';
+import { HomeIcon, DocumentTextIcon, BanknotesIcon, DocumentChartBarIcon, CreditCardIcon, Cog6ToothIcon, ChevronLeftIcon, ChevronRightIcon, UserCircleIcon, ChartBarIcon, ShieldCheckIcon, BellIcon } from '@heroicons/react/24/outline';
 import {
   HomeIcon as HomeIconSolid,
   DocumentTextIcon as DocumentTextIconSolid,
   BanknotesIcon as BanknotesIconSolid,
   DocumentChartBarIcon as DocumentChartBarIconSolid,
-  ChartBarIcon as ChartBarIconSolid,
 } from '@heroicons/react/24/solid';
 import { FEATURE_FLAGS } from '../lib/constants';
 
@@ -35,7 +15,6 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const location = useLocation();
-  const [hoveredItem, setHoveredItem] = useState(null);
 
   const mainNavigation = [
     {
@@ -62,104 +41,28 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
       badge: null,
       description: 'Bank Transactions',
     },
-    ...FEATURE_FLAGS.GERMAN_TAX.enabled ? [{
-      name: t('navigation.tax_reports'),
+    ...(FEATURE_FLAGS.GERMAN_TAX.enabled ? [{
+      name: t('navigation.german_tax'),
       href: '/german-tax-reports',
       icon: DocumentChartBarIcon,
       iconSolid: DocumentChartBarIconSolid,
       badge: 'NEW',
       description: 'German Tax Compliance',
-    }] : [],
-  ];
-
-  const analyticsNavigation = [
-    {
-      name: t('navigation.analytics'),
-      href: '/analytics',
-      icon: ChartBarIcon,
-      iconSolid: ChartBarIconSolid,
-      badge: null,
-      description: 'Business Intelligence',
-    },
-    {
-      name: t('navigation.calculator'),
-      href: '/calculator',
-      icon: CalculatorIcon,
-      badge: null,
-      description: 'Tax Calculator',
-    },
-    {
-      name: 'Revenue Tracking',
-      href: '/revenue',
-      icon: CurrencyEuroIcon,
-      badge: null,
-      description: 'Revenue Analytics',
-    },
-  ];
-
-  const managementNavigation = [
-    {
-      name: t('navigation.uploads'),
-      href: '/uploads',
-      icon: CloudArrowUpIcon,
-      badge: '3',
-      description: 'Document Upload & OCR',
-    },
-    ...FEATURE_FLAGS.STRIPE_BILLING.enabled ? [{
+    }] : []),
+    ...(FEATURE_FLAGS.STRIPE_BILLING.enabled ? [{
       name: t('navigation.billing'),
       href: '/billing',
       icon: CreditCardIcon,
       badge: null,
       description: 'Subscription & Billing',
-    }] : [],
-    ...FEATURE_FLAGS.ELSTER_COMPLIANCE.enabled ? [{
+    }] : []),
+    ...(FEATURE_FLAGS.ELSTER_COMPLIANCE.enabled ? [{
       name: t('navigation.compliance'),
       href: '/compliance',
       icon: ShieldCheckIcon,
       badge: null,
       description: 'GDPR & GoBD Compliance',
-    }] : [],
-  ];
-
-  const adminNavigation = user?.role === 'admin' ? [
-    {
-      name: 'Companies',
-      href: '/companies',
-      icon: BuildingOfficeIcon,
-      badge: null,
-      description: 'Manage Companies',
-    },
-    {
-      name: 'Users',
-      href: '/users',
-      icon: UsersIcon,
-      badge: null,
-      description: 'User Management',
-    },
-    {
-      name: 'Audit Logs',
-      href: '/audit-logs',
-      icon: ClipboardDocumentListIcon,
-      badge: null,
-      description: 'System Audit Trail',
-    },
-  ] : [];
-
-  const systemNavigation = [
-    {
-      name: t('navigation.notifications'),
-      href: '/notifications',
-      icon: BellIcon,
-      badge: '3',
-      description: 'Alerts & Notifications',
-    },
-    {
-      name: t('navigation.settings'),
-      href: '/settings',
-      icon: Cog6ToothIcon,
-      badge: null,
-      description: 'Account Settings',
-    },
+    }] : []),
   ];
 
   const isActiveLink = (href) => {
@@ -168,67 +71,76 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   };
 
   const renderNavItem = (item, index, sectionKey = '') => {
-    const isActive = isActiveLink(item.href);
-    const isHovered = hoveredItem === `${sectionKey}-${item.href}-${index}`;
+    const isActive = item.href && isActiveLink(item.href);
+    // const isHovered = hoveredItem === `${sectionKey}-${item.href || item.name}-${index}`;
     const IconComponent = isActive && item.iconSolid ? item.iconSolid : item.icon;
-
+    if (item.enabled) {
+      return (
+        <NavLink
+          key={`${sectionKey}-${item.href}`}
+          to={item.href}
+          className={`relative group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+            isActive 
+              ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25' 
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800'
+          }`}
+          onMouseEnter={() => setHoveredItem(`${sectionKey}-${item.href}-${index}`)}
+          onMouseLeave={() => setHoveredItem(null)}
+        >
+          <div className="flex items-center w-full">
+            <div className={`flex-shrink-0 ${isActive ? 'transform scale-110' : ''} transition-transform duration-200`}>
+              <IconComponent className="h-5 w-5" />
+            </div>
+            {!isCollapsed && (
+              <>
+                <span className="ml-3 flex-1 text-left truncate">
+                  {item.name}
+                </span>
+                {item.badge && (
+                  <span className={`ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : item.badge === 'NEW' 
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+                {item.partial && (
+                  <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Coming Soon</span>
+                )}
+              </>
+            )}
+          </div>
+        </NavLink>
+      );
+    }
+    // DISABLED (not clickable)
     return (
-      <NavLink
-        key={`${sectionKey}-${item.href}`}
-        to={item.href}
-        className={`relative group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
-          isActive 
-            ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25' 
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800'
-        }`}
-        onMouseEnter={() => setHoveredItem(`${sectionKey}-${item.href}-${index}`)}
+      <div
+        key={`${sectionKey}-${item.name}`}
+        className="relative group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl opacity-50 cursor-not-allowed"
+        title="Coming soon"
+        onMouseEnter={() => setHoveredItem(`${sectionKey}-${item.name}-${index}`)}
         onMouseLeave={() => setHoveredItem(null)}
       >
         <div className="flex items-center w-full">
-          <div className={`flex-shrink-0 ${isActive ? 'transform scale-110' : ''} transition-transform duration-200`}>
+          <div className="flex-shrink-0">
             <IconComponent className="h-5 w-5" />
           </div>
-
           {!isCollapsed && (
             <>
               <span className="ml-3 flex-1 text-left truncate">
                 {item.name}
               </span>
-
-              {item.badge && (
-                <span className={`ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                  isActive
-                    ? 'bg-white/20 text-white'
-                    : item.badge === 'NEW' 
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                }`}>
-                  {item.badge}
-                </span>
-              )}
+              <span className="ml-2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17v.01M12 7v4m0 4h.01M17 7a5 5 0 00-10 0v4a5 5 0 0010 0V7z" /></svg>
+              </span>
             </>
           )}
         </div>
-
-        {/* Enhanced Tooltip for collapsed sidebar */}
-        {isCollapsed && isHovered && (
-          <div className="absolute left-full ml-3 px-4 py-3 bg-gray-900 text-white text-sm rounded-lg shadow-xl z-50 whitespace-nowrap dark:bg-gray-700 border border-gray-700 dark:border-gray-600">
-            <div className="font-medium">{item.name}</div>
-            {item.description && (
-              <div className="text-xs text-gray-300 mt-1">{item.description}</div>
-            )}
-            {item.badge && (
-              <span className="inline-block mt-2 px-2 py-0.5 bg-white text-gray-900 rounded text-xs font-medium">
-                {item.badge}
-              </span>
-            )}
-            {/* Arrow */}
-            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full">
-              <div className="w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45"></div>
-            </div>
-          </div>
-        )}
-      </NavLink>
+      </div>
     );
   };
 

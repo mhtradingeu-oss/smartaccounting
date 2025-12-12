@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -56,8 +56,7 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
+  // Remove local state for searchResults and showSearchResults
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
   const searchRef = useRef(null);
@@ -139,20 +138,19 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    // Mock search functionality
+  const filteredSearchResults = useMemo(() => {
     if (searchQuery.length > 2) {
-      const filtered = MOCK_SEARCH_RESULTS.filter(item =>
+      return MOCK_SEARCH_RESULTS.filter(item =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subtitle.toLowerCase().includes(searchQuery.toLowerCase()),
       );
-      setSearchResults(filtered);
-      setShowSearchResults(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
     }
+    return [];
   }, [searchQuery]);
+
+  const showSearchResults = searchQuery.length > 2 && filteredSearchResults.length > 0;
+
+  // Removed useEffect for searchResults and showSearchResults
 
   const handleLogout = () => {
     logout();
@@ -215,7 +213,7 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                // onFocus: showSearchResults is derived
                 className="block w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-xl leading-5 bg-white/80 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800/80 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 transition-all duration-200"
                 placeholder={t('search.enhanced_placeholder')}
               />
@@ -227,13 +225,13 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
             </div>
 
             {/* Enhanced Search Results */}
-            {showSearchResults && searchResults.length > 0 && (
+            {showSearchResults && filteredSearchResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700 max-h-96 overflow-y-auto z-50">
                 <div className="p-3">
                   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     Search Results
                   </div>
-                  {searchResults.map((result, index) => (
+                  {filteredSearchResults.map((result, index) => (
                     <a
                       key={index}
                       href={result.href}

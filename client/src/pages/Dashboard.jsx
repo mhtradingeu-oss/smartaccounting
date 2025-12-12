@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dashboardAPI } from '../services/dashboardAPI';
 import { logger } from '../lib/logger';
@@ -27,20 +27,32 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [disabled, setDisabled] = useState(false);
   const [selectedTimeframe, setSelectedTimeframe] = useState('month');
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchDashboardData = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setDisabled(false);
     try {
-      setLoading(true);
-      const statsResponse = await dashboardAPI.getStats();
-      setDashboardData({
-        stats: statsResponse,
-      });
-      setError(null);
+      const result = await dashboardAPI.getStats();
+      if (result.disabled) {
+        setDisabled(true);
+        setDashboardData(null);
+        setError(null);
+      } else if (!result.data || Object.keys(result.data).length === 0) {
+        setDashboardData(null);
+        setError(null);
+      } else {
+        setDashboardData(result.data);
+        setError(null);
+      }
     } catch (err) {
+      // Only set error for true network/API failures (not 501, not empty)
       logger.error('Failed to fetch dashboard data:', err);
       setError(t('dashboard.error_loading'));
       setDashboardData(null);
+      setDisabled(false);
     } finally {
       setLoading(false);
     }
@@ -48,16 +60,33 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [fetchDashboardData, selectedTimeframe]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTimeframe]);
 
+  // 1. Loading
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
+        <span className="ml-4 text-gray-500">{t('common.loading')}</span>
       </div>
     );
   }
 
+  // 2. Disabled (501)
+  if (disabled) {
+    return (
+      <div className="text-center py-12">
+        <ExclamationTriangleIcon className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {t('dashboard.coming_soon')}
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.coming_soon_desc')}</p>
+      </div>
+    );
+  }
+
+  // 3. Error (real failure)
   if (error) {
     return (
       <div className="text-center py-12">
@@ -73,9 +102,23 @@ const Dashboard = () => {
     );
   }
 
-  const stats = dashboardData?.stats || {};
-  const taxSummary = dashboardData?.taxSummary;
-  const uploadStats = dashboardData?.uploadStats;
+  // 4. Empty
+  if (!dashboardData) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          {t('dashboard.empty_title')}
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">
+          {t('dashboard.empty_message')}
+        </p>
+      </div>
+    );
+  }
+
+  // 5. Success
+  const stats = dashboardData || {};
+  // ...existing code...
   const recentActivities = dashboardData?.recentActivities || [];
 
   const formatCurrency = (amount) => {

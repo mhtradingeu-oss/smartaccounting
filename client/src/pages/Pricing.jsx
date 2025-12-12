@@ -1,4 +1,4 @@
-import { logger } from '../lib/logger';
+//
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -161,66 +161,16 @@ const PlanCard = ({ plan, currentPlan, onSelectPlan, subscriptionStatus }) => {
 const Pricing = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [plans, setPlans] = useState({});
-  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [error, setError] = useState(null);
+  const [plans] = useState({});
+  const [subscriptionStatus] = useState(null);
+  const [loading] = useState(true);
+  const [selectedPlan] = useState(null);
+  const [showCheckout] = useState(false);
+  const [error] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      const [plansResponse, statusResponse] = await Promise.all([
-        api.get('/stripe/plans'),
-        api.get('/stripe/subscription'),
-      ]);
-
-      const planPayload = plansResponse.data || {};
-      const subscriptionPayload = statusResponse.data || {};
-      const planList = Array.isArray(planPayload.plans || planPayload)
-        ? (planPayload.plans || planPayload)
-        : Object.values(planPayload.plans || {});
-
-      const normalizedPlans = (planList || []).map((plan) => ({
-        id: plan.id,
-        name: plan.name || plan.nickname || 'Plan',
-        price: typeof plan.price === 'number' ? plan.price : plan.unit_amount ? plan.unit_amount / 100 : 0,
-        features: plan.features || [],
-      }));
-
-      const planMap = Object.fromEntries(normalizedPlans.map((plan) => [plan.id, plan]));
-
-      setPlans(planMap);
-      setSubscriptionStatus(subscriptionPayload.subscription || subscriptionPayload);
-      setError(null);
-    } catch (err) {
-      logger.error('Failed to load pricing data', err);
-      setError('Pricing endpoints are unavailable right now.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSelectPlan = (plan) => {
-    setSelectedPlan(plan);
-    setShowCheckout(true);
-  };
-
-  const handleSubscriptionSuccess = (_subscriptionId) => {
-    setShowCheckout(false);
-    setSelectedPlan(null);
-    fetchData(); 
-    alert('Subscription created successfully!');
-  };
-
-  const handleCancelCheckout = () => {
-    setShowCheckout(false);
-    setSelectedPlan(null);
-  };
 
   if (loading) {
     return (
@@ -237,6 +187,22 @@ const Pricing = () => {
           {t('pricing')} unavailable
         </h2>
         <p className="text-gray-600 mb-6">{error}</p>
+        <Button onClick={fetchData}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  // Empty state for no plans
+  const plansArray = Object.values(plans);
+  if (!plansArray.length) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          {t('noPlansAvailable') || 'No plans available'}
+        </h2>
+        <p className="text-gray-600 mb-6">Please check back later.</p>
         <Button onClick={fetchData}>
           Retry
         </Button>
@@ -289,7 +255,7 @@ const Pricing = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {Object.values(plans).map((plan) => (
+          {plansArray.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}

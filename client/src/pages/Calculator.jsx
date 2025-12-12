@@ -12,17 +12,22 @@ const Calculator = () => {
   const [expenses, setExpenses] = useState('');
   const [vatRate, setVatRate] = useState('19');
   const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   const calculateTax = () => {
-    const grossIncome = parseFloat(income) || 0;
-    const totalExpenses = parseFloat(expenses) || 0;
-    const vat = parseFloat(vatRate) || 19;
-
+    setError(null);
+    const grossIncome = parseFloat(income);
+    const totalExpenses = parseFloat(expenses);
+    const vat = parseFloat(vatRate);
+    if (isNaN(grossIncome) || isNaN(totalExpenses) || isNaN(vat)) {
+      setError('Please enter valid numbers for all fields.');
+      setResults(null);
+      return;
+    }
     const netIncome = grossIncome - totalExpenses;
     const vatAmount = (grossIncome * vat) / 100;
     const incomeTax = calculateIncomeTax(netIncome);
     const solidarityTax = incomeTax * 0.055;
-
     setResults({
       grossIncome,
       totalExpenses,
@@ -133,7 +138,12 @@ const Calculator = () => {
             <h3 className="section-title">Tax Calculation Results</h3>
           </div>
 
-          {results ? (
+          {error && (
+            <div className="text-center py-4">
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
+          {results && !error ? (
             <div className="space-y-4">
               <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Income Summary</h4>

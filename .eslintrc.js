@@ -1,14 +1,19 @@
+// .eslintrc.js
 module.exports = {
   root: true,
 
-  // Global environments
+  // -------------------------------
+  // Global environments (Backend)
+  // -------------------------------
   env: {
     node: true,
     es2021: true,
     jest: true,
   },
 
-  // Base rules
+  // -------------------------------
+  // Base config
+  // -------------------------------
   extends: [
     'eslint:recommended',
     'prettier',
@@ -19,12 +24,15 @@ module.exports = {
     sourceType: 'module',
   },
 
-  // Global rules (backend rules)
+  // -------------------------------
+  // Global rules (Backend-safe)
+  // -------------------------------
   rules: {
-    // Backend only strict rules
+    // Logs & debugging
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
+    // Code quality
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-undef': 'error',
 
@@ -33,13 +41,14 @@ module.exports = {
     'object-shorthand': 'warn',
     'prefer-arrow-callback': 'warn',
 
+    // Style & correctness
     'eqeqeq': ['error', 'always'],
     'curly': ['error', 'all'],
-    'quotes': ['error', 'single'],
+    'quotes': ['error', 'single', { avoidEscape: true }],
     'semi': ['error', 'always'],
     'comma-dangle': ['error', 'always-multiline'],
 
-    // Security
+    // Security (important)
     'no-eval': 'error',
     'no-implied-eval': 'error',
     'no-new-func': 'error',
@@ -63,47 +72,52 @@ module.exports = {
         },
       },
       plugins: ['react', 'react-hooks'],
+      extends: [
+        'plugin:react/recommended',
+        'plugin:react-hooks/recommended',
+      ],
       settings: {
         react: {
           version: 'detect',
         },
       },
       rules: {
-        // Allow window, navigator, localStorage
+        // Browser globals
         'no-undef': 'off',
 
-        // Stop complaining about unused vars in React
-        'no-unused-vars': 'warn',
-
-        // Allow console in frontend
+        // React friendliness
+        'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
         'no-console': 'off',
 
-        // JSX usage helpers
-        'react/jsx-uses-react': 'warn',
-        'react/jsx-uses-vars': 'warn',
+        // JSX / React 17+
         'react/react-in-jsx-scope': 'off',
         'react/prop-types': 'off',
 
-        // Hooks best practices
+        // Hooks safety
         'react-hooks/rules-of-hooks': 'error',
         'react-hooks/exhaustive-deps': 'warn',
       },
     },
 
+    // -------------------------------
     // Test files
+    // -------------------------------
     {
-      files: ['tests/**/*.js'],
+      files: ['tests/**/*.js', '**/*.test.js', '**/*.spec.js'],
       env: {
         jest: true,
         node: true,
       },
       rules: {
         'no-unused-vars': 'off',
+        'no-console': 'off',
       },
     },
   ],
 
-  // Ignore heavy folders
+  // -------------------------------
+  // Ignore heavy / generated folders
+  // -------------------------------
   ignorePatterns: [
     'node_modules/',
     'dist/',
@@ -112,7 +126,7 @@ module.exports = {
     'client/dist/',
     'uploads/',
     'temp/',
-
+    
     '*.min.js',
   ],
 };

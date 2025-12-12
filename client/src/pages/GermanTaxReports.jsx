@@ -15,6 +15,8 @@ const GermanTaxReports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('current-quarter');
   const [reportType, setReportType] = useState('ust');
   const isFeatureDisabled = !FEATURE_FLAGS.GERMAN_TAX.enabled;
+  // Demo: add loading and error state placeholders for future API
+  const [error, setError] = useState(null); // set error if fetch fails
 
   const reportTypes = [
     { id: 'ust', name: t('ustReport'), description: t('ustReportDescription') },
@@ -54,6 +56,27 @@ const GermanTaxReports = () => {
               </p>
             </div>
           </Card>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <span className="text-gray-500">Loading tax reports...</span>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center h-64">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button className="btn-primary" onClick={() => setError(null)}>Retry</button>
         </div>
       </Layout>
     );

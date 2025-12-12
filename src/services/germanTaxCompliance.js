@@ -470,7 +470,7 @@ class GermanTaxCompliance {
       errors.push('Issue date is required');
     }
 
-    if (invoice.total == null && invoice.amount == null) {
+    if (invoice.total === null && invoice.amount === null) {
       errors.push('Invoice total is required');
     }
     if (!invoice.clientName) {

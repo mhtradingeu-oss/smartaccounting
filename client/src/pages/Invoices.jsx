@@ -10,6 +10,7 @@ const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generatingPdf, setGeneratingPdf] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchInvoices();
@@ -19,8 +20,10 @@ const Invoices = () => {
     try {
       const response = await api.get('/invoices');
       setInvoices(response.data);
+      setError(null);
     } catch (error) {
       logger.error('Failed to fetch invoices', error);
+      setError('Failed to load invoices. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -77,10 +80,20 @@ const Invoices = () => {
     );
   };
 
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="text-red-600 mb-4">{error}</p>
+        <Button onClick={fetchInvoices} variant="primary">Retry</Button>
       </div>
     );
   }

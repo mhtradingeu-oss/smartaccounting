@@ -54,10 +54,32 @@ const Analytics = () => {
     }, 1000);
   }, [timeframe]);
 
+  const [error, setError] = useState(null); // set error if fetch fails
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Demo: placeholder error and empty state for future API
+  const isEmpty = !analyticsData;
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="text-red-600 mb-4">{error}</p>
+        <button className="btn-primary" onClick={() => setError(null)}>Retry</button>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="text-gray-500 mb-4">No analytics data available.</p>
+        <button className="btn-primary" onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }

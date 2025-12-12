@@ -4,24 +4,28 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
+
+const getInitialDarkMode = () => {
+  const savedTheme = localStorage.getItem('theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+};
+
+const getInitialSidebarCollapsed = () => {
+  const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+  return savedSidebarState === 'true';
+};
+
 const Layout = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(getInitialSidebarCollapsed);
+  const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode);
 
   useEffect(() => {
-    // Check for saved theme preference or default to system preference
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-      setIsDarkMode(true);
+    // Set initial dark mode class
+    if (isDarkMode) {
       document.documentElement.classList.add('dark');
-    }
-
-    // Check for saved sidebar state
-    const savedSidebarState = localStorage.getItem('sidebarCollapsed');
-    if (savedSidebarState === 'true') {
-      setIsSidebarCollapsed(true);
+    } else {
+      document.documentElement.classList.remove('dark');
     }
 
     // Listen for system theme changes
@@ -36,10 +40,9 @@ const Layout = () => {
         }
       }
     };
-
     mediaQuery.addEventListener('change', handleSystemThemeChange);
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, []);
+  }, [isDarkMode]);
 
   const toggleSidebar = () => {
     const newState = !isSidebarCollapsed;

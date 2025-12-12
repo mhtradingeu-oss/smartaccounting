@@ -61,6 +61,9 @@ export default defineConfig(({ mode: _mode }) => {
     },
     define: {
       global: 'globalThis',
+      'process.env': {
+        REACT_APP_DISABLE_LOGIN: JSON.stringify(process.env.REACT_APP_DISABLE_LOGIN || ''),
+      },
     },
   };
 });

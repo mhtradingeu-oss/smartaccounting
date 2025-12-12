@@ -1,15 +1,25 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
 import Dashboard from './pages/Dashboard';
 import Invoices from './pages/Invoices';
 import BankStatements from './pages/BankStatements';
-import GermanTaxReports from './pages/GermanTaxReports';
 import Billing from './pages/Billing';
 import Pricing from './pages/Pricing';
+
+// Simple NotFound page
+function NotFound() {
+  return (
+    <div style={{ padding: '4rem', textAlign: 'center' }}>
+      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>404 - Page Not Found</h1>
+      <p style={{ color: '#888', marginTop: '1rem' }}>The page you are looking for does not exist.</p>
+    </div>
+  );
+}
 
 import './index.css';
 
@@ -19,55 +29,59 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* LOGIN DISABLED: Direct routes to dashboard */}
+            {/* Public route */}
             <Route path="/pricing" element={<Pricing />} />
-
-            {/* Direct routes - no authentication required */}
-            <Route path="/" element={<Dashboard />} />
-            {/* <Route path="/login" element={<Login />} /> */}
+            {/* Protected routes */}
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/dashboard" 
               element={
-                <Layout>
-                  <Dashboard />
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/invoices" 
               element={
-                <Layout>
-                  <Invoices />
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <Invoices />
+                  </Layout>
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/bank-statements" 
               element={
-                <Layout>
-                  <BankStatements />
-                </Layout>
-              } 
-            />
-            <Route 
-              path="/german-tax" 
-              element={
-                <Layout>
-                  <GermanTaxReports />
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <BankStatements />
+                  </Layout>
+                </ProtectedRoute>
               } 
             />
             <Route 
               path="/billing" 
               element={
-                <Layout>
-                  <Billing />
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <Billing />
+                  </Layout>
+                </ProtectedRoute>
               } 
             />
-
-            {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Catch all route: show NotFound */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       </AuthProvider>
