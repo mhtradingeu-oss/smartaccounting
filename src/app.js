@@ -1,39 +1,114 @@
+// Configured Express application; index.js bootstraps runtime and attaches the server.
 require('dotenv').config();
 const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const { errorHandler } = require('./utils/errorHandler');
+const swaggerUi = require('swagger-ui-express');
+const corsMiddleware = require('./middleware/cors');
+const { applySecurityMiddleware } = require('./middleware/security');
+const errorHandler = require('./middleware/errorHandler');
+const logger = require('./lib/logger');
+const { specs, swaggerOptions } = require('./config/swagger');
+const { APP_VERSION } = require('./config/appVersion');
 
-// Routes
 const authRoutes = require('./routes/auth');
-const invoiceRoutes = require('./routes/invoices');
 const dashboardRoutes = require('./routes/dashboard');
+const invoiceRoutes = require('./routes/invoices');
+const bankStatementRoutes = require('./routes/bankStatements');
+const germanTaxRoutes = require('./routes/germanTax');
+const companyRoutes = require('./routes/companies');
+const userRoutes = require('./routes/users');
+const stripeRoutes = require('./routes/stripe');
+const taxReportRoutes = require('./routes/taxReports');
+const systemRoutes = require('./routes/system');
+const monitoringRoutes = require('./routes/monitoring');
+const complianceRoutes = require('./routes/compliance');
+const elsterRoutes = require('./routes/elster');
+const ocrRoutes = require('./routes/ocr');
+const logRoutes = require('./routes/logs');
+const emailTestRoutes = require('./routes/emailTest');
+const germanTaxComplianceRoutes = require('./routes/germanTaxCompliance');
 
 const app = express();
+const API_PREFIX = process.env.API_BASE_URL || '/api';
+const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 5000;
 
-// Base API prefix
-const API_PREFIX = process.env.API_BASE_URL || '/api/v1';
+app.set('apiPrefix', API_PREFIX);
 
-// Middlewares
-app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+/*
+ * v0.1 scope guard:
+ * 1) Enabled: Auth (login/register), company/profile management, user CRUD, invoices,
+ *    dashboard stats, bank statement import/list.
+ * 2) Disabled: VAT/tax services, Stripe billing, German compliance/Elster exports.
+ * 3) Out of scope: advanced analytics, OCR intelligence, multi-entity billing.
+ * Disabled endpoints return 501 + {status:'disabled', version:'v0.1', feature:'...'}.
+ */
+/*
+ * API surface v0.1 (all prefixed with API_PREFIX)
+ * Public: POST /auth/login, POST /auth/register
+ * Authenticated: GET /auth/me
+ * Companies: GET /companies, PUT /companies
+ * Users: GET/POST /users, PUT/DELETE /users/:userId
+ * Invoices: GET/POST /invoices, PUT /invoices/:invoiceId
+ * Dashboard: GET /dashboard/stats
+ * Bank statements: GET /bank-statements, POST /bank-statements/import, GET /bank-statements/:id/transactions, POST /bank-statements/reconcile, PUT /bank-statements/transactions/:id/categorize
+ */
 
-// Routes registration
-app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/invoices`, invoiceRoutes);
-app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+if (process.env.TRUST_PROXY === 'true' || process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
-// Health check
-app.get(`${API_PREFIX}/health`, (req, res) => {
+applySecurityMiddleware(app);
+app.use(corsMiddleware);
+app.use(express.json({ limit: process.env.JSON_LIMIT || '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || '10mb' }));
+app.use(logger.requestLogger);
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
+
+app.get('/health', (req, res) => {
   res.status(200).json({
-    status: 'healthy',
-    env: process.env.NODE_ENV || 'development',
+    status: 'ok',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
+    version: APP_VERSION,
   });
 });
 
-// Global error handler
+app.get(`${API_PREFIX}/health`, (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    service: 'SmartAccounting Backend',
+    timestamp: new Date().toISOString(),
+    port: DEFAULT_PORT,
+    version: APP_VERSION,
+  });
+});
+
+app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/invoices`, invoiceRoutes);
+app.use(`${API_PREFIX}/bank-statements`, bankStatementRoutes);
+app.use(`${API_PREFIX}/german-tax`, germanTaxRoutes);
+app.use(`${API_PREFIX}/stripe`, stripeRoutes);
+app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(`${API_PREFIX}/companies`, companyRoutes);
+app.use(`${API_PREFIX}/tax-reports`, taxReportRoutes);
+app.use(`${API_PREFIX}/compliance`, complianceRoutes);
+app.use(`${API_PREFIX}/german-tax-compliance`, germanTaxComplianceRoutes);
+app.use(`${API_PREFIX}/elster`, elsterRoutes);
+app.use(`${API_PREFIX}/ocr`, ocrRoutes);
+app.use(`${API_PREFIX}/system`, systemRoutes);
+app.use(`${API_PREFIX}/monitoring`, monitoringRoutes);
+app.use(`${API_PREFIX}/logs`, logRoutes);
+app.use(`${API_PREFIX}/email-test`, emailTestRoutes);
+
+app.use('*', (req, res) => {
+  res.status(404).json({
+    status: 'error',
+    message: 'Route not found',
+    path: req.originalUrl,
+  });
+});
+
 app.use(errorHandler);
 
 module.exports = app;

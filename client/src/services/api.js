@@ -1,33 +1,19 @@
 
 import axios from 'axios';
 
-// Determine the correct base URL based on environment
-const getBaseURL = () => {
-  // Check if running in Replit environment
-  const isReplit = window.location.hostname.includes('replit.dev') || 
-                   window.location.hostname.includes('replit.com') ||
-                   window.location.hostname.includes('repl.co') ||
-                   window.location.hostname.includes('spock.replit.dev');
-  
-  if (isReplit) {
-    // In Replit, backend and frontend share the same host
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    return `${protocol}//${hostname}/api`;
-  }
-  
-  // In development, use localhost
-  if (import.meta.env.DEV) {
-    return 'http://0.0.0.0:5000/api';
-  }
-  
-  // In production, use relative path
-  return '/api';
-};
+/*
+ * API contract v0.1 (baseURL = /api)
+ * Public: POST /auth/login, POST /auth/register
+ * Authenticated: GET /auth/me, GET /dashboard/stats
+ * Companies: GET /companies, PUT /companies
+ * Users: GET/POST /users, PUT/DELETE /users/:userId
+ * Invoices: GET/POST /invoices, PUT /invoices/:invoiceId
+ * Bank statements: GET /bank-statements, POST /bank-statements/import, GET /bank-statements/:id/transactions, POST /bank-statements/reconcile, PUT /bank-statements/transactions/:id/categorize
+ */
 
-// Create axios instance with improved configuration
+// Single base URL ensures no duplicate /api segments in requests.
 const api = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: '/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

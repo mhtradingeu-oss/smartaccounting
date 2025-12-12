@@ -42,9 +42,11 @@ const CheckoutForm = ({ planId, onSuccess, onCancel }) => {
     try {
       
       const { data } = await api.post('/stripe/create-subscription', { planId });
+      const subscription = data.subscription || data;
+      const clientSecret = subscription?.latest_invoice?.payment_intent?.client_secret;
 
-      if (data.clientSecret) {
-        const result = await stripe.confirmCardPayment(data.clientSecret, {
+      if (clientSecret) {
+        const result = await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
             card: elements.getElement(CardElement),
           },
@@ -52,10 +54,14 @@ const CheckoutForm = ({ planId, onSuccess, onCancel }) => {
 
         if (result.error) {
           setError(result.error.message);
-        } else {
-          onSuccess(data.subscriptionId);
+          return;
         }
+      } else if (!subscription) {
+        setError('Subscription could not be created');
+        return;
       }
+
+      onSuccess(subscription?.id || subscription?.subscriptionId || '');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create subscription');
     } finally {
@@ -160,6 +166,7 @@ const Pricing = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -169,13 +176,30 @@ const Pricing = () => {
     try {
       const [plansResponse, statusResponse] = await Promise.all([
         api.get('/stripe/plans'),
-        api.get('/stripe/subscription-status'),
+        api.get('/stripe/subscription'),
       ]);
 
-      setPlans(plansResponse.data);
-      setSubscriptionStatus(statusResponse.data);
-    } catch (error) {
-      logger.error('Failed to load pricing data', error);
+      const planPayload = plansResponse.data || {};
+      const subscriptionPayload = statusResponse.data || {};
+      const planList = Array.isArray(planPayload.plans || planPayload)
+        ? (planPayload.plans || planPayload)
+        : Object.values(planPayload.plans || {});
+
+      const normalizedPlans = (planList || []).map((plan) => ({
+        id: plan.id,
+        name: plan.name || plan.nickname || 'Plan',
+        price: typeof plan.price === 'number' ? plan.price : plan.unit_amount ? plan.unit_amount / 100 : 0,
+        features: plan.features || [],
+      }));
+
+      const planMap = Object.fromEntries(normalizedPlans.map((plan) => [plan.id, plan]));
+
+      setPlans(planMap);
+      setSubscriptionStatus(subscriptionPayload.subscription || subscriptionPayload);
+      setError(null);
+    } catch (err) {
+      logger.error('Failed to load pricing data', err);
+      setError('Pricing endpoints are unavailable right now.');
     } finally {
       setLoading(false);
     }
@@ -206,6 +230,20 @@ const Pricing = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          {t('pricing')} unavailable
+        </h2>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <Button onClick={fetchData}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-12">
@@ -219,7 +257,7 @@ const Pricing = () => {
         {subscriptionStatus && (
           <div className="mt-4 p-4 bg-blue-50 rounded-lg inline-block">
             <p className="text-sm text-blue-800">
-              {t('status')}: <span className="font-semibold capitalize">{subscriptionStatus.status}</span>
+              {t('status')}: <span className="font-semibold capitalize">{subscriptionStatus.status || subscriptionStatus.subscriptionStatus}</span>
               {subscriptionStatus.plan && (
                 <span className="ml-2">({plans[subscriptionStatus.plan]?.name})</span>
               )}

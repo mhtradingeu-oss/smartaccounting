@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const router = express.Router();
-const { auth } = require('../middleware/auth');
+const { authenticate } = require('../middleware/authMiddleware');
 const bankStatementService = require('../services/bankStatementService');
 const { BankStatement, BankTransaction } = require('../models');
 
@@ -32,7 +32,7 @@ const upload = multer({
   },
 });
 
-router.post('/import', auth, upload.single('bankStatement'), async (req, res) => {
+router.post('/import', authenticate, upload.single('bankStatement'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -59,7 +59,7 @@ router.post('/import', auth, upload.single('bankStatement'), async (req, res) =>
   }
 });
 
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
     const statements = await BankStatement.findAll({
       where: { companyId: req.user.companyId },
@@ -72,7 +72,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-router.get('/:id/transactions', auth, async (req, res) => {
+router.get('/:id/transactions', authenticate, async (req, res) => {
   try {
     const transactions = await BankTransaction.findAll({
       where: {
@@ -88,7 +88,7 @@ router.get('/:id/transactions', auth, async (req, res) => {
   }
 });
 
-router.post('/reconcile', auth, async (req, res) => {
+router.post('/reconcile', authenticate, async (req, res) => {
   try {
     const reconciled = await bankStatementService.reconcileTransactions(req.user.companyId);
 
@@ -104,7 +104,7 @@ router.post('/reconcile', auth, async (req, res) => {
   }
 });
 
-router.put('/transactions/:id/categorize', auth, async (req, res) => {
+router.put('/transactions/:id/categorize', authenticate, async (req, res) => {
   try {
     const { category, vatCategory } = req.body;
     

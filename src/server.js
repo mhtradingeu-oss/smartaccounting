@@ -1,27 +1,6 @@
-const { syncDatabase } = require('./lib/database');
-const app = require('./app');
-const { logger } = require('./utils/errorHandler');
-
-const PORT = process.env.PORT || 5000;
-
-async function startServer() {
-  try {
-    await syncDatabase({ force: false });
-
-    const server = app.listen(PORT, () => {
-      logger.info(`🚀 Server running on port ${PORT}`);
-    });
-
-    return server;
-  } catch (err) {
-    logger.error('Server failed to start', err);
-    process.exit(1);
-  }
-}
-
-// Only run when NOT in tests
-if (require.main === module) {
-  startServer();
-}
-
-module.exports = startServer;
+// Deprecated bootstrap kept only for reference; runtime now starts in index.js -> src/app.js.
+module.exports = function legacyServerBootstrap() {
+  // Intentional no-op to prevent accidental double bootstraps.
+  // Use `node index.js` (or the NPM scripts) to start the application.
+  console.warn('src/server.js is deprecated. Start the server with index.js.');
+};

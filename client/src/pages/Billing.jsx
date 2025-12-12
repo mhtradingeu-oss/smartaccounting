@@ -3,6 +3,7 @@ import { logger } from '../lib/logger';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { FEATURE_FLAGS, APP_VERSION } from '../lib/constants';
 import api from '../services/api';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -11,26 +12,36 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const Billing = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const isBillingDisabled = !FEATURE_FLAGS.STRIPE_BILLING.enabled;
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [billingHistory, setBillingHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (isBillingDisabled) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     fetchBillingData();
-  }, []);
+  }, [isBillingDisabled]);
 
   const fetchBillingData = async () => {
     try {
       const [statusResponse, historyResponse] = await Promise.all([
-        api.get('/stripe/subscription-status'),
+        api.get('/stripe/subscription'),
         api.get('/stripe/billing-history'),
       ]);
       
-      setSubscriptionStatus(statusResponse.data);
-      setBillingHistory(historyResponse.data);
-    } catch (error) {
-      logger.error('Failed to load billing data', error);
+      setSubscriptionStatus(statusResponse.data?.subscription || statusResponse.data);
+      setBillingHistory(historyResponse.data?.history || []);
+      setError(null);
+    } catch (err) {
+      logger.error('Failed to load billing data', err);
+      setError('Billing data is unavailable right now.');
     } finally {
       setLoading(false);
     }
@@ -85,6 +96,7 @@ const Billing = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) {return '-';}
     return new Date(dateString).toLocaleDateString('de-DE', {
       year: 'numeric',
       month: 'long',
@@ -93,10 +105,11 @@ const Billing = () => {
   };
 
   const formatCurrency = (amount, currency = 'EUR') => {
+    const value = typeof amount === 'number' ? amount : Number(amount) || 0;
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
       currency,
-    }).format(amount);
+    }).format(value);
   };
 
   if (loading) {
@@ -106,6 +119,22 @@ const Billing = () => {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          {t('billingTitle')}
+        </h2>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <Button onClick={fetchBillingData}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const statusValue = subscriptionStatus?.status || subscriptionStatus?.subscriptionStatus;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -126,7 +155,7 @@ const Billing = () => {
               {t('currentSubscription')}
             </h2>
             
-            {subscriptionStatus?.status === 'none' ? (
+            {statusValue === 'none' ? (
               <div className="text-center py-4">
                 <p className="text-gray-600 mb-4">{t('noActiveSubscription')}</p>
                 <Button onClick={() => window.location.href = '/pricing'}>
@@ -137,7 +166,7 @@ const Billing = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">Status</span>
-                  {getStatusBadge(subscriptionStatus.status)}
+                  {getStatusBadge(statusValue)}
                 </div>
                 
                 {subscriptionStatus.plan && (
@@ -160,7 +189,7 @@ const Billing = () => {
                   </div>
                 )}
                 
-                {subscriptionStatus.status === 'active' && user?.role === 'admin' && (
+                {statusValue === 'active' && user?.role === 'admin' && (
                   <div className="pt-4 border-t border-gray-200">
                     {subscriptionStatus.cancelAtPeriodEnd ? (
                       <p className="text-sm text-orange-600">
@@ -199,7 +228,7 @@ const Billing = () => {
                 View All Plans
               </Button>
               
-              {subscriptionStatus?.status === 'active' && (
+              {statusValue === 'active' && (
                 <Button
                   variant="secondary"
                   size="sm"

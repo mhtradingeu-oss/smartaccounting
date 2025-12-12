@@ -1,10 +1,10 @@
 const express = require('express');
 const { Company, User } = require('../models');
-const { authenticateToken, requireRole, requireCompany } = require('../middleware/auth');
+const { authenticate, requireRole, requireCompany } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, requireCompany, async (req, res) => {
+router.get('/', authenticate, requireCompany, async (req, res) => {
   try {
     const company = await Company.findByPk(req.user.companyId, {
       include: [{
@@ -24,7 +24,7 @@ router.get('/', authenticateToken, requireCompany, async (req, res) => {
   }
 });
 
-router.put('/', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.put('/', authenticate, requireRole(['admin']), async (req, res) => {
   try {
     const {
       name,

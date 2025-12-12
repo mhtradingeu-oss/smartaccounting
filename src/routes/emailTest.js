@@ -1,12 +1,12 @@
 const express = require('express');
 const emailService = require('../services/emailService');
 const EmailValidation = require('../utils/emailValidation');
-const { authenticate, authorize } = require('../middleware/authMiddleware');
+const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const { sendSuccess, sendError } = require('../utils/responseHelpers');
 const logger = require('../lib/logger');
 
 const router = express.Router();
-const requireAdmin = authorize('admin');
+const requireAdmin = requireRole(['admin']);
 
 const ensureEmail = (value) => {
   if (!EmailValidation.validateEmailFormat(value)) {

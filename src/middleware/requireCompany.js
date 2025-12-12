@@ -3,8 +3,9 @@ const requireCompany = (req, res, next) => {
 
   if (!companyId) {
     return res.status(403).json({
-      success: false,
+      status: 'error',
       message: 'Company context is required for this resource',
+      code: 'COMPANY_REQUIRED',
     });
   }
 

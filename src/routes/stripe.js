@@ -4,8 +4,11 @@ const { Company, User } = require('../models');
 const { authenticate, requireCompany } = require('../middleware/authMiddleware');
 const { sendSuccess, sendError } = require('../utils/responseHelpers');
 const logger = require('../lib/logger');
+const { disabledFeatureHandler } = require('../utils/disabledFeatureResponse');
 
 const router = express.Router();
+
+router.use(disabledFeatureHandler('Stripe billing'));
 
 const ensureStripeConfigured = (req, res, next) => {
   if (!process.env.STRIPE_SECRET_KEY) {

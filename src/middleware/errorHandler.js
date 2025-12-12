@@ -1,8 +1,13 @@
+// Canonical Express error handler: logs failures and responds with a consistent shape.
 const logger = require('../lib/logger');
 
 const formatErrorDetails = (errorList = []) => errorList.map((el) => el.message);
 
 const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+  if (res.headersSent) {
+    return next(err);
+  }
+
   logger.error('Unhandled error', {
     error: err.message,
     stack: err.stack,
@@ -12,35 +17,45 @@ const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused
     userAgent: req.get('User-Agent'),
   });
 
+  let statusCode = err.statusCode || err.status || 500;
+  let message = err.message || 'Server error';
+  let code = err.code;
+  let details;
+
   if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      success: false,
-      error: 'Validation Error',
-      details: formatErrorDetails(Object.values(err.errors)),
-    });
+    statusCode = 400;
+    message = 'Validation error';
+    code = code || 'VALIDATION_ERROR';
+    details = formatErrorDetails(Object.values(err.errors));
+  } else if (err.name === 'SequelizeValidationError') {
+    statusCode = 400;
+    message = 'Database validation error';
+    code = code || 'DB_VALIDATION_ERROR';
+    details = formatErrorDetails(err.errors);
+  } else if (err.name === 'JsonWebTokenError') {
+    statusCode = 401;
+    message = 'Invalid token';
+    code = code || 'INVALID_TOKEN';
   }
 
-  if (err.name === 'SequelizeValidationError') {
-    return res.status(400).json({
-      success: false,
-      error: 'Database Validation Error',
-      details: formatErrorDetails(err.errors),
-    });
+  if (process.env.NODE_ENV === 'production' && statusCode >= 500) {
+    message = 'Server error';
   }
 
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      success: false,
-      error: 'Invalid token',
-    });
+  const response = {
+    status: 'error',
+    message,
+  };
+
+  if (code) {
+    response.code = code;
   }
 
-  return res.status(err.statusCode || 500).json({
-    success: false,
-    error: process.env.NODE_ENV === 'production'
-      ? 'Server Error'
-      : err.message,
-  });
+  if (details) {
+    response.details = details;
+  }
+
+  return res.status(statusCode).json(response);
 };
 
 module.exports = errorHandler;

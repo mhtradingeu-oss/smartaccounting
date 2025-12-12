@@ -1,11 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { User, Company } = require('../models');
-const { authenticateToken, requireRole, requireCompany } = require('../middleware/auth');
+const { authenticate, requireRole, requireCompany } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, requireCompany, requireRole(['admin']), async (req, res) => {
+router.get('/', authenticate, requireCompany, requireRole(['admin']), async (req, res) => {
   try {
     const users = await User.findAll({
       where: { companyId: req.user.companyId },
@@ -23,7 +23,7 @@ router.get('/', authenticateToken, requireCompany, requireRole(['admin']), async
   }
 });
 
-router.post('/', authenticateToken, requireCompany, requireRole(['admin']), async (req, res) => {
+router.post('/', authenticate, requireCompany, requireRole(['admin']), async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body;
 
@@ -56,7 +56,7 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin']), asyn
   }
 });
 
-router.put('/:userId', authenticateToken, requireRole(['admin']), requireCompany, async (req, res) => {
+router.put('/:userId', authenticate, requireRole(['admin']), requireCompany, async (req, res) => {
   try {
     const { userId } = req.params;
     const { firstName, lastName, email, role, status } = req.body;
@@ -92,7 +92,7 @@ router.put('/:userId', authenticateToken, requireRole(['admin']), requireCompany
   }
 });
 
-router.delete('/:userId', authenticateToken, requireRole(['admin']), requireCompany, async (req, res) => {
+router.delete('/:userId', authenticate, requireRole(['admin']), requireCompany, async (req, res) => {
   try {
     const { userId } = req.params;
 

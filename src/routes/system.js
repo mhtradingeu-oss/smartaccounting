@@ -1,6 +1,6 @@
 const express = require('express');
 const { Company, User, Invoice, TaxReport, sequelize } = require('../models');
-const { authenticate: authenticateToken, authorize: requireRole } = require('../middleware/authMiddleware');
+const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const logger = require('../lib/logger');
 
 const router = express.Router();
@@ -17,7 +17,7 @@ router.get('/health', async (req, res) => {
   }
 });
 
-router.get('/info', authenticateToken, requireRole(['admin']), (req, res) => {
+router.get('/info', authenticate, requireRole(['admin']), (req, res) => {
   res.json({
     status: 'SmartAccounting System',
     version: '1.0.0',
@@ -36,7 +36,7 @@ router.get('/info', authenticateToken, requireRole(['admin']), (req, res) => {
   });
 });
 
-router.get('/health-detailed', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/health-detailed', authenticate, requireRole(['admin']), async (req, res) => {
   try {
     const { sequelize } = require('../config/database');
     let databaseStatus = 'unknown';
@@ -60,7 +60,7 @@ router.get('/health-detailed', authenticateToken, requireRole(['admin']), async 
   }
 });
 
-router.get('/stats', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/stats', authenticate, requireRole(['admin']), async (req, res) => {
   try {
     const [
       totalUsers,
@@ -89,7 +89,7 @@ router.get('/stats', authenticateToken, requireRole(['admin']), async (req, res)
   }
 });
 
-router.get('/db-test', authenticateToken, requireRole(['admin']), async (req, res) => {
+router.get('/db-test', authenticate, requireRole(['admin']), async (req, res) => {
   try {
     await sequelize.authenticate();
     res.json({

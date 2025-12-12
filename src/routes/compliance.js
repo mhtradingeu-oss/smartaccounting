@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/authMiddleware');
+const { disabledFeatureHandler } = require('../utils/disabledFeatureResponse');
+
+router.use(disabledFeatureHandler('Compliance overview'));
 
 router.get('/test', (req, res) => {
   res.json({
@@ -9,7 +12,7 @@ router.get('/test', (req, res) => {
   });
 });
 
-router.get('/overview', authenticateToken, async (req, res) => {
+router.get('/overview', authenticate, async (req, res) => {
   try {
     
     const complianceData = {
@@ -45,7 +48,7 @@ router.get('/overview', authenticateToken, async (req, res) => {
   }
 });
 
-router.get('/reports/:companyId/:type', authenticateToken, async (req, res) => {
+router.get('/reports/:companyId/:type', authenticate, async (req, res) => {
   try {
     const { companyId, type } = req.params;
 
@@ -72,7 +75,7 @@ router.get('/reports/:companyId/:type', authenticateToken, async (req, res) => {
   }
 });
 
-router.get('/deadlines', authenticateToken, async (req, res) => {
+router.get('/deadlines', authenticate, async (req, res) => {
   try {
     const deadlines = [
       {

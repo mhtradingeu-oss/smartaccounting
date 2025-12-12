@@ -13,8 +13,8 @@ const PlanBadge = () => {
 
   const fetchSubscriptionStatus = async () => {
     try {
-      const response = await api.get('/stripe/subscription-status');
-      setSubscriptionStatus(response.data);
+      const response = await api.get('/stripe/subscription');
+      setSubscriptionStatus(response.data?.subscription || response.data);
     } catch (error) {
       logger.error('Failed to fetch subscription status', error);
     } finally {
@@ -49,8 +49,10 @@ const PlanBadge = () => {
 
   return (
     <div className="inline-flex items-center">
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getBadgeColor(subscriptionStatus.status, subscriptionStatus.plan)}`}>
-        {subscriptionStatus.status === 'active' ? getPlanName(subscriptionStatus.plan) : 'Inactive'}
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getBadgeColor(subscriptionStatus.status || subscriptionStatus.subscriptionStatus, subscriptionStatus.plan)}`}>
+        {(subscriptionStatus.status || subscriptionStatus.subscriptionStatus) === 'active'
+          ? getPlanName(subscriptionStatus.plan)
+          : 'Inactive'}
       </span>
     </div>
   );

@@ -24,8 +24,8 @@ router.post('/login', loginLimiter, sanitizeInput, preventNoSqlInjection, async 
   }
 });
 
-router.get('/profile', authenticate, sanitizeInput, preventNoSqlInjection, async (req, res) => {
-  res.status(200).json({ success: true, profile: req.user });
+router.get('/me', authenticate, sanitizeInput, preventNoSqlInjection, async (req, res) => {
+  res.status(200).json({ success: true, user: req.user });
 });
 
 module.exports = router;

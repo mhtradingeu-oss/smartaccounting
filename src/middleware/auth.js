@@ -1,16 +1,9 @@
-
-// Compatibility layer: expose helpers consumed by legacy routes
-const {
-  authenticate,
-  authorize,
-  requireAdmin,
-  requireCompany: requireCompanyMiddleware,
-} = require('./authMiddleware');
+// Thin alias for legacy imports; prefer requiring ./authMiddleware directly.
+const authMiddleware = require('./authMiddleware');
 
 module.exports = {
-  authenticateToken: authenticate,
-  requireRole: authorize,
-  requireAdmin,
-  requireCompany: requireCompanyMiddleware,
-  auth: authenticate,
+  ...authMiddleware,
+  authenticateToken: authMiddleware.authenticate,
+  auth: authMiddleware.authenticate,
+  authorize: authMiddleware.requireRole,
 };

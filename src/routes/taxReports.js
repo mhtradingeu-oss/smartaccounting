@@ -1,12 +1,15 @@
 const express = require('express');
 const { TaxReport, Company } = require('../models');
-const { authenticateToken, requireRole, requireCompany } = require('../middleware/auth');
+const { authenticate, requireRole, requireCompany } = require('../middleware/authMiddleware');
 const { body, validationResult } = require('express-validator');
 const { generateTaxReport } = require('../services/taxCalculator');
 const { exportToElster } = require('../services/elsterService');
+const { disabledFeatureHandler } = require('../utils/disabledFeatureResponse');
 const router = express.Router();
 
-router.get('/', authenticateToken, requireCompany, async (req, res) => {
+router.use(disabledFeatureHandler('Tax reporting'));
+
+router.get('/', authenticate, requireCompany, async (req, res) => {
   try {
     const { page = 1, limit = 20, reportType, period } = req.query;
     const offset = (page - 1) * limit;
@@ -38,7 +41,7 @@ router.get('/', authenticateToken, requireCompany, async (req, res) => {
   }
 });
 
-router.get('/:id', authenticateToken, requireRole(['admin', 'accountant', 'auditor']), requireCompany, async (req, res) => {
+router.get('/:id', authenticate, requireRole(['admin', 'accountant', 'auditor']), requireCompany, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -64,7 +67,7 @@ router.get('/:id', authenticateToken, requireRole(['admin', 'accountant', 'audit
   }
 });
 
-router.post('/', authenticateToken, requireCompany, requireRole(['admin', 'accountant']), [
+router.post('/', authenticate, requireCompany, requireRole(['admin', 'accountant']), [
   body('reportType').isIn(['USt', 'KSt', 'GewSt', 'annual']).withMessage('Invalid report type'),
   body('period.year').isInt({ min: 2020, max: 2030 }).withMessage('Invalid year'),
   body('period.quarter').optional().isInt({ min: 1, max: 4 }).withMessage('Invalid quarter'),
@@ -118,7 +121,7 @@ router.post('/', authenticateToken, requireCompany, requireRole(['admin', 'accou
   }
 });
 
-router.put('/:id', authenticateToken, requireRole(['admin', 'accountant']), requireCompany, async (req, res) => {
+router.put('/:id', authenticate, requireRole(['admin', 'accountant']), requireCompany, async (req, res) => {
   try {
     const { id } = req.params;
     const { data, status } = req.body;
@@ -153,7 +156,7 @@ router.put('/:id', authenticateToken, requireRole(['admin', 'accountant']), requ
   }
 });
 
-router.post('/:id/submit', authenticateToken, requireRole(['admin', 'accountant']), requireCompany, async (req, res) => {
+router.post('/:id/submit', authenticate, requireRole(['admin', 'accountant']), requireCompany, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -186,7 +189,7 @@ router.post('/:id/submit', authenticateToken, requireRole(['admin', 'accountant'
   }
 });
 
-router.get('/:id/export/elster', authenticateToken, requireCompany, async (req, res) => {
+router.get('/:id/export/elster', authenticate, requireCompany, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -218,7 +221,7 @@ router.get('/:id/export/elster', authenticateToken, requireCompany, async (req, 
   }
 });
 
-router.delete('/:id', authenticateToken, requireRole(['admin']), requireCompany, async (req, res) => {
+router.delete('/:id', authenticate, requireRole(['admin']), requireCompany, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -245,7 +248,7 @@ router.delete('/:id', authenticateToken, requireRole(['admin']), requireCompany,
   }
 });
 
-router.post('/generate', authenticateToken, requireCompany, requireRole(['admin', 'accountant']), [
+router.post('/generate', authenticate, requireCompany, requireRole(['admin', 'accountant']), [
   body('reportType').isIn(['USt', 'KSt', 'GewSt', 'annual']).withMessage('Invalid report type'),
   body('period.year').isInt({ min: 2020, max: 2030 }).withMessage('Invalid year'),
   body('period.quarter').optional().isInt({ min: 1, max: 4 }).withMessage('Invalid quarter'),

@@ -8,11 +8,13 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { FEATURE_FLAGS, APP_VERSION } from '../lib/constants';
 
 const GermanTaxReports = () => {
   const { t } = useTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState('current-quarter');
   const [reportType, setReportType] = useState('ust');
+  const isFeatureDisabled = !FEATURE_FLAGS.GERMAN_TAX.enabled;
 
   const reportTypes = [
     { id: 'ust', name: t('ustReport'), description: t('ustReportDescription') },
@@ -30,7 +32,32 @@ const GermanTaxReports = () => {
 
   const generateReport = async () => {
     
-    };
+  };
+
+  if (isFeatureDisabled) {
+    return (
+      <Layout>
+        <div className="py-24">
+          <Card>
+            <div className="p-8 text-center space-y-4">
+              <div className="flex items-center justify-center text-red-600">
+                <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
+                <span className="text-xl font-semibold text-gray-900">
+                  German tax reporting is disabled in v0.1
+                </span>
+              </div>
+              <p className="text-gray-600">
+                Please check back later once VAT and compliance workflows reach v0.2.
+              </p>
+              <p className="text-xs uppercase tracking-wider text-gray-400">
+                {`v${APP_VERSION}`}
+              </p>
+            </div>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

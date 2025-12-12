@@ -32,94 +32,15 @@ const Dashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      const [statsResponse, monthlyResponse, taxResponse, uploadsResponse] = await Promise.all([
-        dashboardAPI.getStats(),
-        dashboardAPI.getMonthlyData(),
-        dashboardAPI.getTaxSummary(),
-        dashboardAPI.getUploadStats(),
-      ]);
-
+      const statsResponse = await dashboardAPI.getStats();
       setDashboardData({
-        stats: statsResponse.data,
-        monthlyData: monthlyResponse.data,
-        taxSummary: taxResponse.data,
-        uploadStats: uploadsResponse.data,
+        stats: statsResponse,
       });
+      setError(null);
     } catch (err) {
       logger.error('Failed to fetch dashboard data:', err);
       setError(t('dashboard.error_loading'));
-      // Enhanced mock data for demonstration
-      setDashboardData({
-        stats: {
-          totalRevenue: 125480.50,
-          totalExpenses: 89320.75,
-          netProfit: 36159.75,
-          profitMargin: 28.8,
-          invoiceCount: 142,
-          pendingInvoices: 8,
-          overdue: 3,
-          bankTransactions: 234,
-          taxLiability: 12543.25,
-          monthlyGrowth: 12.5,
-          quarterlyGrowth: 8.7,
-          averageInvoice: 883.10,
-        },
-        monthlyData: {
-          revenue: [12000, 15000, 18000, 22000, 19000, 25000, 28000, 24000, 26000, 30000, 32000, 29000],
-          expenses: [8000, 9500, 11000, 14000, 12000, 16000, 18000, 15000, 17000, 19000, 20000, 18500],
-          profit: [4000, 5500, 7000, 8000, 7000, 9000, 10000, 9000, 9000, 11000, 12000, 10500],
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        },
-        taxSummary: {
-          currentQuarter: 'Q4 2024',
-          vatOwed: 4250.30,
-          incomeTax: 8293.00,
-          nextDeadline: '2024-12-31',
-          complianceScore: 98,
-          elsterStatus: 'ready',
-        },
-        uploadStats: {
-          totalUploads: 89,
-          recentUploads: 12,
-          processingQueue: 3,
-          processed: 86,
-          failed: 0,
-        },
-        recentActivities: [
-          {
-            id: 1,
-            type: 'invoice',
-            action: 'created',
-            description: 'Invoice #2024-0156 created for €2,450.00',
-            time: '2 minutes ago',
-            status: 'success',
-          },
-          {
-            id: 2,
-            type: 'payment',
-            action: 'received',
-            description: 'Payment received from Müller GmbH',
-            time: '15 minutes ago',
-            status: 'success',
-          },
-          {
-            id: 3,
-            type: 'tax',
-            action: 'calculated',
-            description: 'VAT report generated for November',
-            time: '1 hour ago',
-            status: 'info',
-          },
-          {
-            id: 4,
-            type: 'upload',
-            action: 'processed',
-            description: 'Receipt OCR processing completed',
-            time: '2 hours ago',
-            status: 'success',
-          },
-        ],
-      });
+      setDashboardData(null);
     } finally {
       setLoading(false);
     }
@@ -153,8 +74,8 @@ const Dashboard = () => {
   }
 
   const stats = dashboardData?.stats || {};
-  const taxSummary = dashboardData?.taxSummary || {};
-  const uploadStats = dashboardData?.uploadStats || {};
+  const taxSummary = dashboardData?.taxSummary;
+  const uploadStats = dashboardData?.uploadStats;
   const recentActivities = dashboardData?.recentActivities || [];
 
   const formatCurrency = (amount) => {
@@ -402,56 +323,68 @@ const Dashboard = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t('dashboard.tax_compliance')}
               </h3>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                <span className="text-sm text-emerald-600 font-medium">
-                  {taxSummary.complianceScore}% compliant
+              {taxSummary ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                  <span className="text-sm text-emerald-600 font-medium">
+                    {taxSummary.complianceScore}% compliant
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  Not available in v0.1
                 </span>
-              </div>
+              )}
             </div>
 
-            <div className="space-y-4">
-              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('dashboard.next_vat_deadline')}
-                  </span>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                    {formatDate(taxSummary.nextDeadline || new Date().toISOString())}
-                  </span>
+            {taxSummary ? (
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t('dashboard.next_vat_deadline')}
+                    </span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">
+                      {formatDate(taxSummary.nextDeadline || new Date().toISOString())}
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-lg font-bold text-emerald-600">
+                      {formatCurrency(taxSummary.vatOwed || 0)}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">VAT due</span>
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <span className="text-lg font-bold text-emerald-600">
-                    {formatCurrency(taxSummary.vatOwed || 0)}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-2">VAT due</span>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-lg font-bold text-gray-900 dark:text-white">
-                    {formatCurrency(taxSummary.incomeTax || 0)}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(taxSummary.incomeTax || 0)}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Income Tax
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Income Tax
+                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">
+                      {taxSummary.currentQuarter}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Current Period
+                    </div>
                   </div>
                 </div>
-                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-lg font-bold text-gray-900 dark:text-white">
-                    {taxSummary.currentQuarter}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Current Period
-                  </div>
-                </div>
-              </div>
 
-              <button className="w-full btn-primary">
-                <DocumentChartBarIcon className="h-4 w-4 mr-2" />
-                {t('dashboard.generate_tax_report')}
-              </button>
-            </div>
+                <button className="w-full btn-primary">
+                  <DocumentChartBarIcon className="h-4 w-4 mr-2" />
+                  {t('dashboard.generate_tax_report')}
+                </button>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Not available in v0.1
+              </div>
+            )}
           </div>
 
           {/* Upload Status */}
@@ -460,33 +393,41 @@ const Dashboard = () => {
               {t('dashboard.document_processing')}
             </h3>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Total Processed</span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {uploadStats.processed || 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">In Queue</span>
-                <span className="font-medium text-amber-600">
-                  {uploadStats.processingQueue || 0}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Recent Uploads</span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  {uploadStats.recentUploads || 0}
-                </span>
-              </div>
-            </div>
+            {uploadStats ? (
+              <>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Total Processed</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {uploadStats.processed || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">In Queue</span>
+                    <span className="font-medium text-amber-600">
+                      {uploadStats.processingQueue || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Recent Uploads</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {uploadStats.recentUploads || 0}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button className="w-full btn-secondary">
-                <CloudArrowUpIcon className="h-4 w-4 mr-2" />
-                {t('dashboard.upload_documents')}
-              </button>
-            </div>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button className="w-full btn-secondary">
+                    <CloudArrowUpIcon className="h-4 w-4 mr-2" />
+                    {t('dashboard.upload_documents')}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Not available in v0.1
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -582,6 +523,11 @@ const Dashboard = () => {
               </div>
             );
           })}
+          {recentActivities.length === 0 && (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Not available in v0.1
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -5,11 +5,31 @@ const logger = require('../lib/logger');
 const { Op } = require('sequelize');
 
 class DashboardService {
+  static missingFields(model, fields) {
+    if (!model || !model.rawAttributes) {
+      return fields;
+    }
+    return fields.filter(field => !model.rawAttributes[field]);
+  }
+
   /**
    * Get comprehensive dashboard statistics
    */
   static async getStats(companyId) {
     try {
+      const missingInvoiceFields = this.missingFields(Invoice, ['total', 'status', 'dueDate']);
+      const missingUserFields = this.missingFields(User, ['companyId', 'isActive']);
+      if (missingInvoiceFields.length || missingUserFields.length) {
+        return {
+          status: 'unavailable',
+          reason: 'insufficient_data',
+          missingFields: {
+            Invoice: missingInvoiceFields,
+            User: missingUserFields,
+          },
+        };
+      }
+
       const [
         totalInvoices,
         paidInvoices,
@@ -30,10 +50,10 @@ class DashboardService {
             dueDate: { [Op.lt]: new Date() },
           }, 
         }),
-        Invoice.sum('totalAmount', { 
+        Invoice.sum('total', { 
           where: { companyId, status: 'paid' }, 
         }) || 0,
-        Invoice.sum('totalAmount', { 
+        Invoice.sum('total', { 
           where: { 
             companyId, 
             status: 'paid',
@@ -43,14 +63,7 @@ class DashboardService {
           }, 
         }) || 0,
         User.count({ where: { companyId } }),
-        User.count({ 
-          where: { 
-            companyId,
-            lastLoginAt: {
-              [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            },
-          }, 
-        }),
+        User.count({ where: { companyId, isActive: true } }),
       ]);
 
       return {
@@ -95,6 +108,15 @@ class DashboardService {
    */
   static async getMonthlyData(companyId) {
     try {
+      const missingInvoiceFields = this.missingFields(Invoice, ['total', 'status', 'createdAt']);
+      if (missingInvoiceFields.length) {
+        return {
+          status: 'unavailable',
+          reason: 'insufficient_data',
+          missingFields: { Invoice: missingInvoiceFields },
+        };
+      }
+
       const currentYear = new Date().getFullYear();
       const monthlyData = [];
 
@@ -103,7 +125,7 @@ class DashboardService {
         const endDate = new Date(currentYear, month + 1, 0);
 
         const [revenue, invoiceCount] = await Promise.all([
-          Invoice.sum('totalAmount', {
+          Invoice.sum('total', {
             where: {
               companyId,
               status: 'paid',
@@ -142,6 +164,15 @@ class DashboardService {
    */
   static async getTaxSummary(companyId) {
     try {
+      const missingTransactionFields = this.missingFields(Transaction, ['vatAmount', 'type', 'transactionDate']);
+      if (missingTransactionFields.length) {
+        return {
+          status: 'unavailable',
+          reason: 'insufficient_data',
+          missingFields: { Transaction: missingTransactionFields },
+        };
+      }
+
       const currentYear = new Date().getFullYear();
       const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1;
 
@@ -268,18 +299,27 @@ class DashboardService {
    */
   static async getRecentActivities(companyId, limit = 10) {
     try {
+      const missingInvoiceFields = this.missingFields(Invoice, ['invoiceNumber', 'status', 'total', 'updatedAt', 'clientName']);
+      if (missingInvoiceFields.length) {
+        return {
+          status: 'unavailable',
+          reason: 'insufficient_data',
+          missingFields: { Invoice: missingInvoiceFields },
+        };
+      }
+
       const recentInvoices = await Invoice.findAll({
         where: { companyId },
         order: [['updatedAt', 'DESC']],
         limit,
-        attributes: ['id', 'number', 'status', 'totalAmount', 'updatedAt', 'clientName'],
+        attributes: ['id', 'invoiceNumber', 'status', 'total', 'updatedAt', 'clientName'],
       });
 
       const activities = recentInvoices.map(invoice => ({
         id: invoice.id,
         type: 'invoice',
-        action: `Invoice ${invoice.number} ${invoice.status}`,
-        description: `${invoice.clientName} - €${invoice.totalAmount}`,
+        action: `Invoice ${invoice.invoiceNumber} ${invoice.status}`,
+        description: `${invoice.clientName} - €${invoice.total}`,
         timestamp: invoice.updatedAt,
         status: invoice.status,
       }));

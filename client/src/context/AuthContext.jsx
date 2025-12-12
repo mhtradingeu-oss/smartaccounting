@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { logger } from '../lib/logger';
-import api from '../services/api';
+import { authAPI } from '../services/authAPI';
 
 // Create the AuthContext
 const AuthContext = createContext();
@@ -24,9 +24,10 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const response = await api.get('/auth/me');
-      if (response.data.success) {
-        setUser(response.data.user);
+      const response = await authAPI.me();
+      const payload = response.data || response;
+      if (payload.success) {
+        setUser(payload.user);
         setIsAuthenticated(true);
       }
     } catch (error) {
@@ -42,10 +43,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await api.post('/auth/login', { email, password });
-      
-      if (response.data.success) {
-        const { token, user } = response.data;
+      const response = await authAPI.login({ email, password });
+      const payload = response.data || response;
+
+      if (payload.success) {
+        const { token, user } = payload;
         localStorage.setItem('token', token);
         setUser(user);
         setIsAuthenticated(true);
@@ -53,12 +55,12 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
       
-      return { success: false, error: response.data.message };
+      return { success: false, error: payload.message };
     } catch (error) {
       logger.error('Login failed:', error);
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed', 
+        error: error.response?.data?.message || error.message || 'Login failed', 
       };
     } finally {
       setLoading(false);

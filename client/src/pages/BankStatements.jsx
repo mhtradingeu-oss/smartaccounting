@@ -1,8 +1,9 @@
 import { logger } from '../lib/logger';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Layout from '../components/Layout';
 import Card from '../components/Card';
+import { bankStatementsAPI } from '../services/bankStatementsAPI';
 import {
   CloudArrowUpIcon,
   DocumentTextIcon,
@@ -17,43 +18,46 @@ const BankStatements = () => {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadStatements = async () => {
+    try {
+      const response = await bankStatementsAPI.list();
+      const payload = response.data || response;
+      const items = payload.data || payload.statements || [];
+      setStatements(items);
+      setError(null);
+    } catch (err) {
+      logger.error('Failed to load bank statements', err);
+      setError('Unable to load bank statements');
+    }
+  };
+
+  useEffect(() => {
+    loadStatements();
+  }, []);
 
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) {return;}
 
     setLoading(true);
     setUploadProgress(0);
+    setError(null);
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const formData = new FormData();
-      formData.append('bankStatement', file);
-
-      try {
-        const progressInterval = setInterval(() => {
-          setUploadProgress(prev => Math.min(prev + 10, 90));
-        }, 100);
-
-        clearInterval(progressInterval);
+    try {
+      for (const file of files) {
+        setUploadProgress(25);
+        await bankStatementsAPI.upload(file);
         setUploadProgress(100);
-
-        const newStatement = {
-          id: Date.now() + i,
-          filename: file.name,
-          uploadDate: new Date().toISOString(),
-          status: 'processed',
-          transactions: Math.floor(Math.random() * 50) + 10,
-          balance: (Math.random() * 50000).toFixed(2),
-        };
-
-        setStatements(prev => [newStatement, ...prev]);
-      } catch (error) {
-        logger.error('Failed to upload bank statement', { error, file: file.name });
       }
+      await loadStatements();
+    } catch (err) {
+      logger.error('Failed to upload bank statement', { err });
+      setError(err.message || 'Upload failed');
+    } finally {
+      setLoading(false);
+      setUploadProgress(0);
     }
-
-    setLoading(false);
-    setUploadProgress(0);
   };
 
   const handleDrop = (e) => {
@@ -73,10 +77,14 @@ const BankStatements = () => {
     setDragOver(false);
   };
 
+  const formatDate = (value) => {
+    if (!value) {return '-';}
+    return new Date(value).toLocaleDateString('de-DE');
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
-        {}
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {t('bankStatements')}
@@ -84,9 +92,13 @@ const BankStatements = () => {
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {t('bankStatementsDescription')}
           </p>
+          {error && (
+            <p className="text-sm text-red-600 mt-2">
+              {error}
+            </p>
+          )}
         </div>
 
-        {}
         <Card>
           <div className="p-6">
             <div
@@ -104,14 +116,14 @@ const BankStatements = () => {
                 {t('uploadBankStatement')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {t('supportedFormats')}: CSV, OFX, MT940
+                {t('supportedFormats')}: CSV, TXT, XML, MT940
               </p>
 
               <input
                 type="file"
                 id="bank-statement-upload"
                 className="hidden"
-                accept=".csv,.ofx,.mt940,.txt"
+                accept=".csv,.txt,.xml,.mt940"
                 multiple
                 onChange={(e) => handleFileUpload(e.target.files)}
               />
@@ -141,7 +153,6 @@ const BankStatements = () => {
           </div>
         </Card>
 
-        {}
         <Card>
           <div className="p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -158,10 +169,10 @@ const BankStatements = () => {
                       </div>
                       <div className="ml-4">
                         <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                          {statement.filename}
+                          {statement.filename || statement.originalName || statement.name || 'Bank statement'}
                         </h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {t('uploaded')}: {new Date(statement.uploadDate).toLocaleDateString('de-DE')}
+                          {t('uploaded')}: {formatDate(statement.importDate || statement.createdAt)}
                         </p>
                       </div>
                     </div>
@@ -169,11 +180,13 @@ const BankStatements = () => {
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {statement.transactions} {t('transactions')}
+                          {(statement.transactions?.length || statement.transactionCount || 0)} {t('transactions')}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          €{statement.balance}
-                        </p>
+                        {statement.balance && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            €{statement.balance}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center">

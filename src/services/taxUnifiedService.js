@@ -11,8 +11,24 @@ class TaxUnifiedService {
     this.taxThresholds = GermanTaxUtils.taxThresholds;
   }
 
+  validateTransactionFields(requiredFields, featureName) {
+    const missing = requiredFields.filter(
+      field => !(Transaction && Transaction.rawAttributes && Transaction.rawAttributes[field]),
+    );
+
+    if (missing.length) {
+      const error = new Error(`${featureName} unavailable: missing model fields (${missing.join(', ')})`);
+      error.statusCode = 501;
+      error.code = 'INSUFFICIENT_DATA';
+      error.missingFields = missing;
+      throw error;
+    }
+  }
+
   async calculateVATReturn(companyId, period) {
     try {
+      this.validateTransactionFields(['transactionDate', 'type', 'amount', 'vatRate', 'vatAmount'], 'VAT return');
+
       const { year, quarter, month } = period;
       let startDate, endDate;
 
@@ -63,6 +79,8 @@ class TaxUnifiedService {
 
   async calculateEUR(companyId, year) {
     try {
+      this.validateTransactionFields(['transactionDate', 'type', 'amount', 'vatRate'], 'EÜR calculation');
+
       const startDate = moment(`${year}-01-01`).startOf('day');
       const endDate = moment(`${year}-12-31`).endOf('day');
       

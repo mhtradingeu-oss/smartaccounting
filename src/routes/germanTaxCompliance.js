@@ -1,11 +1,13 @@
-
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { authenticate } = require('../middleware/authMiddleware');
 const germanTaxEngine = require('../services/germanTaxEngine');
 const elsterService = require('../services/elsterService');
 const gobdService = require('../services/gobdComplianceService');
 const logger = require('../lib/logger');
+const { disabledFeatureHandler } = require('../utils/disabledFeatureResponse');
+
+router.use(disabledFeatureHandler('Elster/compliance'));
 
 // Generate UStVA (VAT advance return)
 router.post('/ustva/generate', authenticate, async (req, res) => {

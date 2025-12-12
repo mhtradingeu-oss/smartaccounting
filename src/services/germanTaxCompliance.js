@@ -20,7 +20,24 @@ class GermanTaxCompliance {
     };
   }
 
+  validateTransactionFields(requiredFields, featureName) {
+    const { Transaction } = require('../models');
+    const missing = requiredFields.filter(
+      field => !(Transaction && Transaction.rawAttributes && Transaction.rawAttributes[field]),
+    );
+
+    if (missing.length) {
+      const error = new Error(`${featureName} unavailable: missing model fields (${missing.join(', ')})`);
+      error.statusCode = 501;
+      error.code = 'INSUFFICIENT_DATA';
+      error.missingFields = missing;
+      throw error;
+    }
+  }
+
   async calculateEUR(companyId, year) {
+    this.validateTransactionFields(['transactionDate', 'type', 'amount', 'vatRate'], 'EÜR calculation');
+
     const startDate = moment(`${year}-01-01`).startOf('day');
     const endDate = moment(`${year}-12-31`).endOf('day');
 
@@ -109,6 +126,8 @@ class GermanTaxCompliance {
   }
 
   async generateVATReturn(companyId, period) {
+    this.validateTransactionFields(['transactionDate', 'type', 'amount', 'vatRate', 'vatAmount'], 'VAT return');
+
     const { year, quarter, month } = period;
     let startDate, endDate;
 
@@ -212,6 +231,9 @@ class GermanTaxCompliance {
       warnings: [],
     };
 
+    const { Transaction } = require('../models');
+    const hasDocumentReferenceField = Transaction && Transaction.rawAttributes && Transaction.rawAttributes.documentReference;
+
     const txnDate = transaction.transactionDate || transaction.date;
     if (!txnDate) {
       compliance.violations.push('Missing transaction date');
@@ -228,8 +250,10 @@ class GermanTaxCompliance {
       compliance.isCompliant = false;
     }
 
-    if (!transaction.documentReference) {
+    if (hasDocumentReferenceField && !transaction.documentReference) {
       compliance.warnings.push('Missing document reference - recommended for audit trail');
+    } else if (!hasDocumentReferenceField) {
+      compliance.warnings.push('Transaction model missing documentReference field');
     }
 
     if (transaction.updatedAt && transaction.createdAt) {
@@ -437,23 +461,28 @@ class GermanTaxCompliance {
     const errors = [];
     const numberPattern = /^INV-\d{4}-\d{3}$/;
 
-    if (!invoice.number || !numberPattern.test(invoice.number)) {
+    const invoiceNumber = invoice.invoiceNumber;
+    if (!invoiceNumber || !numberPattern.test(invoiceNumber)) {
       errors.push('Invoice number must follow INV-YYYY-NNN format');
     }
-    if (!invoice.issueDate) {
+
+    if (!invoice.date) {
       errors.push('Issue date is required');
     }
-    if (!invoice.amount) {
-      errors.push('Amount is required');
-    }
-    if (!invoice.vatAmount && invoice.vatAmount !== 0) {
-      errors.push('VAT amount is required (can be 0)');
+
+    if (invoice.total == null && invoice.amount == null) {
+      errors.push('Invoice total is required');
     }
     if (!invoice.clientName) {
       errors.push('Client name is required');
     }
-    if (!invoice.clientAddress) {
-      errors.push('Client address is required');
+
+    const { Invoice } = require('../models');
+    const missingModelFields = ['clientAddress', 'vatAmount'].filter(
+      field => !(Invoice && Invoice.rawAttributes && Invoice.rawAttributes[field]),
+    );
+    if (missingModelFields.length) {
+      errors.push(`Invoice model missing fields needed for compliance checks: ${missingModelFields.join(', ')}`);
     }
 
     return {

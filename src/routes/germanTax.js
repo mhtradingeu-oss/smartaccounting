@@ -1,11 +1,14 @@
 const logger = require('../lib/logger');
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { authenticate } = require('../middleware/authMiddleware');
 const germanTaxCompliance = require('../services/germanTaxCompliance');
 const elsterService = require('../services/elsterService');
+const { disabledFeatureHandler } = require('../utils/disabledFeatureResponse');
 
-router.get('/eur/:year', auth, async (req, res) => {
+router.use(disabledFeatureHandler('VAT/tax reporting'));
+
+router.get('/eur/:year', authenticate, async (req, res) => {
   try {
     const year = parseInt(req.params.year);
     if (year < 2020 || year > new Date().getFullYear()) {
@@ -23,13 +26,13 @@ router.get('/eur/:year', auth, async (req, res) => {
   }
 });
 
-router.post('/vat-return', auth, async (req, res) => {
+router.post('/vat-return', authenticate, async (req, res) => {
   try {
     const { year, quarter, month } = req.body;
 
     if (!year || (!quarter && !month)) {
-      return res.status(400).json({ 
-        error: 'Year and either quarter or month must be provided', 
+      return res.status(400).json({
+        error: 'Year and either quarter or month must be provided',
       });
     }
 
@@ -47,7 +50,7 @@ router.post('/vat-return', auth, async (req, res) => {
   }
 });
 
-router.post('/elster-export', auth, async (req, res) => {
+router.post('/elster-export', authenticate, async (req, res) => {
   try {
     const { vatReturn } = req.body;
 
@@ -68,7 +71,7 @@ router.post('/elster-export', auth, async (req, res) => {
   }
 });
 
-router.get('/kleinunternehmer/:year', auth, async (req, res) => {
+router.get('/kleinunternehmer/:year', authenticate, async (req, res) => {
   try {
     const year = parseInt(req.params.year);
 
@@ -86,7 +89,7 @@ router.get('/kleinunternehmer/:year', auth, async (req, res) => {
   }
 });
 
-router.post('/validate-transaction', auth, async (req, res) => {
+router.post('/validate-transaction', authenticate, async (req, res) => {
   try {
     const { transaction } = req.body;
 
@@ -105,7 +108,7 @@ router.post('/validate-transaction', auth, async (req, res) => {
   }
 });
 
-router.post('/submit', auth, async (req, res) => {
+router.post('/submit', authenticate, async (req, res) => {
   try {
     const { reportType, period, data, submitToElster = false } = req.body;
     const companyId = req.user.companyId;

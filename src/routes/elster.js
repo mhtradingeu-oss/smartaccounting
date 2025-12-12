@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const elsterService = require('../services/elsterService');
-const auth = require('../middleware/auth');
+const { authenticate } = require('../middleware/authMiddleware');
 const { body, validationResult } = require('express-validator');
+const { disabledFeatureHandler } = require('../utils/disabledFeatureResponse');
+
+router.use(disabledFeatureHandler('Elster exports'));
 
 router.post('/submit', 
-  auth,
+  authenticate,
   [
     body('reportType').isIn(['UStVA', 'EÜR']).withMessage('Invalid report type'),
     body('year').isInt({ min: 2020, max: 2030 }).withMessage('Invalid year'),
@@ -79,7 +82,7 @@ router.post('/submit',
   },
 );
 
-router.get('/status/:transferTicket', auth, async (req, res) => {
+router.get('/status/:transferTicket', authenticate, async (req, res) => {
   try {
     const { transferTicket } = req.params;
     
@@ -98,7 +101,7 @@ router.get('/status/:transferTicket', auth, async (req, res) => {
   }
 });
 
-router.get('/history', auth, async (req, res) => {
+router.get('/history', authenticate, async (req, res) => {
   try {
     const companyId = req.user.companyId;
     
@@ -124,7 +127,7 @@ router.get('/history', auth, async (req, res) => {
   }
 });
 
-router.post('/generate-xml', auth, async (req, res) => {
+router.post('/generate-xml', authenticate, async (req, res) => {
   try {
     const { year, month } = req.body;
     const companyId = req.user.companyId;
@@ -150,7 +153,7 @@ router.post('/generate-xml', auth, async (req, res) => {
   }
 });
 
-router.get('/status/:ticket', auth, async (req, res) => {
+router.get('/status/:ticket', authenticate, async (req, res) => {
   try {
     const { ticket } = req.params;
 
@@ -173,7 +176,7 @@ router.get('/status/:ticket', auth, async (req, res) => {
   }
 });
 
-router.get('/history', auth, async (req, res) => {
+router.get('/history', authenticate, async (req, res) => {
   try {
     const companyId = req.user.companyId;
 

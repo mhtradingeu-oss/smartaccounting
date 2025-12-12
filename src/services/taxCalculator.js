@@ -27,6 +27,17 @@ class TaxCalculator {
     };
   }
 
+  assertModelFields(model, fields, featureName) {
+    const missing = fields.filter(field => !(model && model.rawAttributes && model.rawAttributes[field]));
+    if (missing.length) {
+      const error = new Error(`${featureName} unavailable: missing model fields (${missing.join(', ')})`);
+      error.statusCode = 501;
+      error.code = 'INSUFFICIENT_DATA';
+      error.missingFields = missing;
+      throw error;
+    }
+  }
+
   async calculateTaxReport({ companyId, reportType, periodStart, periodEnd }) {
     const startDate = moment.tz(periodStart, 'Europe/Berlin').startOf('day').toDate();
     const endDate = moment.tz(periodEnd, 'Europe/Berlin').endOf('day').toDate();
@@ -48,6 +59,8 @@ class TaxCalculator {
   }
 
   async calculateUstReport(companyId, startDate, endDate) {
+    this.assertModelFields(Invoice, ['type', 'invoiceDate', 'vatRate', 'netAmount', 'vatAmount'], 'USt report');
+
     const [inboundInvoices, outboundInvoices] = await Promise.all([
       Invoice.findAll({
         where: {
@@ -141,6 +154,8 @@ class TaxCalculator {
   }
 
   async calculateKstReport(companyId, startDate, endDate) {
+    this.assertModelFields(Transaction, ['transactionDate', 'type', 'creditAmount', 'debitAmount', 'category', 'nonDeductible'], 'KSt report');
+
     const transactions = await Transaction.findAll({
       where: {
         companyId,
@@ -231,6 +246,8 @@ class TaxCalculator {
   }
 
   async calculateEuRReport(companyId, startDate, endDate) {
+    this.assertModelFields(Transaction, ['transactionDate', 'type', 'amount', 'accountName', 'businessPortion'], 'EÜR report');
+
     const transactions = await Transaction.findAll({
       where: {
         companyId,

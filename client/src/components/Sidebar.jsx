@@ -29,6 +29,7 @@ import {
   DocumentChartBarIcon as DocumentChartBarIconSolid,
   ChartBarIcon as ChartBarIconSolid,
 } from '@heroicons/react/24/solid';
+import { FEATURE_FLAGS } from '../lib/constants';
 
 const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const { t } = useTranslation();
@@ -61,14 +62,14 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
       badge: null,
       description: 'Bank Transactions',
     },
-    {
+    ...FEATURE_FLAGS.GERMAN_TAX.enabled ? [{
       name: t('navigation.tax_reports'),
       href: '/german-tax-reports',
       icon: DocumentChartBarIcon,
       iconSolid: DocumentChartBarIconSolid,
       badge: 'NEW',
       description: 'German Tax Compliance',
-    },
+    }] : [],
   ];
 
   const analyticsNavigation = [
@@ -104,20 +105,20 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
       badge: '3',
       description: 'Document Upload & OCR',
     },
-    {
+    ...FEATURE_FLAGS.STRIPE_BILLING.enabled ? [{
       name: t('navigation.billing'),
       href: '/billing',
       icon: CreditCardIcon,
       badge: null,
       description: 'Subscription & Billing',
-    },
-    {
+    }] : [],
+    ...FEATURE_FLAGS.ELSTER_COMPLIANCE.enabled ? [{
       name: t('navigation.compliance'),
       href: '/compliance',
       icon: ShieldCheckIcon,
       badge: null,
       description: 'GDPR & GoBD Compliance',
-    },
+    }] : [],
   ];
 
   const adminNavigation = user?.role === 'admin' ? [

@@ -1,18 +1,32 @@
 
+import appVersionData from '../../appVersion.json';
+
+/*
+ * v0.1 scope definition:
+ * - Enabled: Auth, company profile, user management, invoices, dashboard stats, bank statements.
+ * - Disabled: VAT/tax reporting, Stripe billing, German compliance/Elster exports.
+ * - Out of scope: analytics intelligence, OCR automation, multi-entity billing.
+ * Disabled flows present a "Not available in v0.1" notice and never emit network calls.
+ */
+
+export const APP_VERSION = appVersionData.APP_VERSION;
+
+export const FEATURE_FLAGS = {
+  GERMAN_TAX: { enabled: false, label: 'German VAT/Tax reporting' },
+  STRIPE_BILLING: { enabled: false, label: 'Stripe billing' },
+  ELSTER_COMPLIANCE: { enabled: false, label: 'Elster/compliance' },
+};
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    REGISTER: '/api/auth/register',
-    REFRESH: '/api/auth/refresh',
-    LOGOUT: '/api/auth/logout',
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
   },
-  USERS: '/api/users',
-  COMPANIES: '/api/companies',
-  INVOICES: '/api/invoices',
-  TAX_REPORTS: '/api/tax-reports',
-  DASHBOARD: '/api/dashboard',
-  STRIPE: '/api/stripe',
+  USERS: '/users',
+  COMPANIES: '/companies',
+  INVOICES: '/invoices',
+  DASHBOARD: '/dashboard',
+  STRIPE: '/stripe',
 };
 
 export const USER_ROLES = {

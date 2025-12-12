@@ -313,16 +313,32 @@ class EmailService {
     }
   }
 
-  async logEmail(emailData) {
+  async logEmail(emailData = {}) {
     try {
+      if (!AuditLog || typeof AuditLog.create !== 'function') {
+        return;
+      }
+
+      // Skip logging when we do not have the required audit fields
+      if (!emailData.userId) {
+        return;
+      }
+
       await AuditLog.create({
         action: 'email_sent',
-        details: emailData,
-        userId: emailData.userId || null,
-        companyId: emailData.companyId || null,
+        resourceType: 'email',
+        resourceId: emailData.messageId || emailData.to,
+        newValues: {
+          to: emailData.to,
+          subject: emailData.subject,
+          template: emailData.template,
+          status: emailData.status,
+          error: emailData.error,
+        },
+        userId: emailData.userId,
       });
     } catch (error) {
-      console.error('Failed to log email:', error);
+      logger.error('Failed to log email', { error: error.message });
     }
   }
 
