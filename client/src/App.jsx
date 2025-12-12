@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
+import { RoleProvider } from './context/RoleContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -23,67 +24,74 @@ function NotFound() {
 
 import './index.css';
 
+
+import { useAuth } from './context/AuthContext';
+
 function App() {
+  // Get user from AuthContext
+  const { user } = useAuth();
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Public route */}
-            <Route path="/pricing" element={<Pricing />} />
-            {/* Protected routes */}
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Layout>
+        <RoleProvider user={user}>
+          <Router>
+            <Routes>
+              {/* Public route */}
+              <Route path="/pricing" element={<Pricing />} />
+              {/* Protected routes */}
+              <Route 
+                path="/" 
+                element={
+                  <ProtectedRoute>
                     <Dashboard />
-                  </Layout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/invoices" 
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Invoices />
-                  </Layout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/bank-statements" 
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <BankStatements />
-                  </Layout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/billing" 
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Billing />
-                  </Layout>
-                </ProtectedRoute>
-              } 
-            />
-            {/* Catch all route: show NotFound */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/invoices" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Invoices />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/bank-statements" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <BankStatements />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/billing" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Billing />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              {/* Catch all route: show NotFound */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </RoleProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useRole, roles } from '../context/RoleContext';
 import { HomeIcon, DocumentTextIcon, BanknotesIcon, DocumentChartBarIcon, CreditCardIcon, Cog6ToothIcon, ChevronLeftIcon, ChevronRightIcon, UserCircleIcon, ChartBarIcon, ShieldCheckIcon, BellIcon } from '@heroicons/react/24/outline';
 import {
   HomeIcon as HomeIconSolid,
@@ -14,8 +15,11 @@ import { FEATURE_FLAGS } from '../lib/constants';
 const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { role } = useRole();
   const location = useLocation();
+  const [, setHoveredItem] = React.useState(null);
 
+  // Role-based navigation filtering
   const mainNavigation = [
     {
       name: t('navigation.dashboard'),
@@ -64,6 +68,18 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
       description: 'GDPR & GoBD Compliance',
     }] : []),
   ];
+
+  // Example: Only admin/accountant can see invoices, viewers cannot
+  const filteredMainNavigation = mainNavigation.filter(item => {
+    if (item.href === '/invoices' && role === roles.VIEWER) { return false; }
+    return true;
+  });
+
+  // Example: Only admin can see adminNavigation
+  const filteredAdminNavigation = (adminNavigation || []).filter(() => role === roles.ADMIN);
+
+  // Example: Only admin/accountant can see managementNavigation
+  const filteredManagementNavigation = (managementNavigation || []).filter(() => role !== roles.VIEWER);
 
   const isActiveLink = (href) => {
     return location.pathname === href || 
@@ -227,10 +243,10 @@ const Sidebar = ({ isCollapsed, onToggleCollapse }) => {
 
       {/* Enhanced Navigation */}
       <nav className="flex-1 px-2 py-4 space-y-6 overflow-y-auto scrollbar-thin">
-        {renderSection(t('navigation.main'), mainNavigation, 'main', HomeIcon)}
+        {renderSection(t('navigation.main'), filteredMainNavigation, 'main', HomeIcon)}
         {renderSection('Analytics', analyticsNavigation, 'analytics', ChartBarIcon)}
-        {renderSection(t('navigation.management'), managementNavigation, 'management', Cog6ToothIcon)}
-        {adminNavigation.length > 0 && renderSection('Administration', adminNavigation, 'admin', ShieldCheckIcon)}
+        {filteredManagementNavigation.length > 0 && renderSection(t('navigation.management'), filteredManagementNavigation, 'management', Cog6ToothIcon)}
+        {filteredAdminNavigation.length > 0 && renderSection('Administration', filteredAdminNavigation, 'admin', ShieldCheckIcon)}
         {renderSection(t('navigation.system'), systemNavigation, 'system', BellIcon)}
       </nav>
 

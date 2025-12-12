@@ -18,7 +18,7 @@ class ErrorBoundary extends React.Component {
     });
 
     // Log error in development
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
   }
@@ -43,7 +43,7 @@ class ErrorBoundary extends React.Component {
             <div className="text-sm text-gray-600 mb-4">
               An unexpected error occurred. Please refresh the page or contact support if the problem persists.
             </div>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="mt-4 text-xs text-gray-500">
                 <summary className="cursor-pointer">Error Details</summary>
                 <pre className="mt-2 whitespace-pre-wrap">

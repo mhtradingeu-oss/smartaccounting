@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  if (process.env.REACT_APP_DISABLE_LOGIN === 'true') {
+  if (import.meta.env.VITE_DISABLE_LOGIN === 'true') {
     return children;
   }
 

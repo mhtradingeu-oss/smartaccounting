@@ -8,7 +8,7 @@ const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, loading } = useAuth();
-  const loginDisabled = process.env.REACT_APP_DISABLE_LOGIN === 'true';
+  const loginDisabled = import.meta.env.VITE_DISABLE_LOGIN === 'true';
   useEffect(() => {
     if (loginDisabled) {
       window.location.href = '/dashboard';

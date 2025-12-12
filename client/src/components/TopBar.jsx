@@ -1,5 +1,8 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import CompanySelector from './CompanySelector';
+import { useLoadCompanies } from '../hooks/useLoadCompanies';
+import { useCompany } from '../context/CompanyContext';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -53,6 +56,8 @@ const MOCK_SEARCH_RESULTS = [
 const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  useLoadCompanies();
+  const { companies } = useCompany();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -256,6 +261,12 @@ const TopBar = ({ isDarkMode, onToggleDarkMode, isCollapsed }) => {
             )}
           </div>
 
+          {/* Company Selector (if companies exist) */}
+          {companies && companies.length > 0 && (
+            <div className="mr-4">
+              <CompanySelector />
+            </div>
+          )}
           {/* Right side enhanced actions */}
           <div className="flex items-center space-x-4">
             {/* Current Time Display */}

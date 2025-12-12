@@ -15,10 +15,14 @@ import './index.css';
 import './i18n';
 import ErrorBoundary from './components/ErrorBoundary';
 
+import { CompanyProvider } from './context/CompanyContext';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <CompanyProvider>
+        <App />
+      </CompanyProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 );
